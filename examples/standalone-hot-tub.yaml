@@ -71,9 +71,10 @@ external_components:
   - source: github://jktightwad/esp-iq2020
 
 # GPIO16/17 (UART2) are free of boot-strapping duties on a standard
-# DevKitV1 board. flow_control_pin is required because a plain MAX485
-# module is half-duplex and needs a GPIO to switch between sending and
-# receiving - skip this line if you use an auto-direction RS485 module.
+# DevKitV1 board. No flow_control_pin here because this assumes an
+# auto-direction RS485 module (see documentation/standalone.md) - if you
+# use a plain MAX485 module instead, add a flow_control_pin line under
+# iq2020: for the GPIO wired to its DE/RE pins.
 uart:
   id: SpaConnection
   tx_pin: GPIO17
