@@ -1,0 +1,159 @@
+##########################################################################
+# Standalone hot tub controller - no Home Assistant required.
+#
+# This is the same IQ2020 protocol component used everywhere else in this
+# repo, but wired up so the ESP32 is the whole product: it serves its own
+# control page and JSON/REST API over WiFi (ESPHome's built-in web_server),
+# instead of relying on Home Assistant's native "api:" integration.
+#
+# Hardware assumed below: a generic ESP32 DevKitV1 (either the micro-USB or
+# USB-C variant - they're the same WROOM module) plus a separate RS485
+# transceiver module (e.g. a MAX485 breakout), since these dev boards don't
+# have RS485 built in. See documentation/standalone.md for wiring/power
+# notes and documentation/devices.md if you'd rather use different ESP32
+# hardware (pin numbers will differ).
+##########################################################################
+
+esphome:
+  name: hot-tub
+  friendly_name: Hot Tub
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+logger:
+  baud_rate: 0
+  level: ERROR
+
+# No "api:" block on purpose - that component is the Home Assistant native
+# API. Skipping it means this device never talks to, or depends on, a
+# Home Assistant instance.
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # If the configured WiFi can't be reached (e.g. router down, moved the
+  # tub), the ESP32 falls back to its own access point so you can still
+  # get to it and fix the config instead of it going dark.
+  ap:
+    ssid: "Hot Tub Fallback Hotspot"
+    password: !secret fallback_ap_password
+
+captive_portal:
+
+# Local time source so the device has a real clock without needing Home
+# Assistant (used for the IQ2020 real-time clock and any on-device time
+# based automations you add later). Change the timezone to your own.
+time:
+  - platform: sntp
+    id: sntp_time
+    timezone: America/Los_Angeles
+
+# This is the standalone control surface: a mobile-friendly control page
+# plus a JSON/REST API, served directly by the ESP32 at
+# http://hot-tub.local/ (or its IP address). Every sensor/switch/fan/
+# climate entity defined below shows up here automatically.
+web_server:
+  version: 3
+  port: 80
+  auth:
+    username: !secret web_username
+    password: !secret web_password
+
+external_components:
+  - source: github://jktightwad/esp-iq2020
+
+# GPIO16/17 (UART2) are free of boot-strapping duties on a standard
+# DevKitV1 board. flow_control_pin is required because a plain MAX485
+# module is half-duplex and needs a GPIO to switch between sending and
+# receiving - skip this line if you use an auto-direction RS485 module.
+uart:
+  id: SpaConnection
+  tx_pin: GPIO17
+  rx_pin: GPIO16
+  baud_rate: 38400
+
+iq2020:
+  uart_id: SpaConnection
+  flow_control_pin: GPIO4
+  polling_rate: 65
+  # Optional raw RS485 traffic viewer port for the IQ2020 DataViewer tool
+  # (see DataViewer/) - useful for debugging, has nothing to do with HA.
+  port: 1234
+
+# If your hot tub remote displays Celsius, replace "_f_" with "_c_" below
+# and set "celsius: true" in the climate section.
+sensor:
+  - platform: iq2020
+    current_f_temperature:
+      name: Current Temperature
+    target_f_temperature:
+      name: Target Temperature
+    outlet_f_temperature:
+      name: Heater Outlet
+    pcb_f_temperature:
+      name: Controller Temperature
+    power_l1:
+      name: Pumps Power
+    power_heater:
+      name: Controller Power
+    power_l2:
+      name: Heater Power
+
+switch:
+  - platform: iq2020
+    name: Lights
+    id: lights_switch
+    icon: "mdi:lightbulb"
+    datapoint: 0
+  - platform: iq2020
+    name: Spa Lock
+    id: spa_lock_switch
+    icon: "mdi:lock"
+    datapoint: 1
+  - platform: iq2020
+    name: Temperature Lock
+    id: temp_lock_switch
+    icon: "mdi:lock"
+    datapoint: 2
+  - platform: iq2020
+    name: Clean Cycle
+    id: clean_cycle_switch
+    icon: "mdi:vacuum"
+    datapoint: 3
+  - platform: iq2020
+    name: Summer Timer
+    id: summer_timer_switch
+    icon: "mdi:sun-clock"
+    datapoint: 4
+
+fan:
+  - platform: iq2020
+    name: Jets 1
+    id: jets1
+    icon: "mdi:turbine"
+    datapoint: 0
+    speeds: 1
+  - platform: iq2020
+    name: Jets 2
+    id: jets2
+    icon: "mdi:turbine"
+    datapoint: 1
+    speeds: 2
+
+climate:
+  - platform: iq2020
+    name: Temperature
+    celsius: false
+
+text_sensor:
+  - platform: iq2020
+    versionstr:
+      name: Version
