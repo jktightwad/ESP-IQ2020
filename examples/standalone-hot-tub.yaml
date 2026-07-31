@@ -6,12 +6,12 @@
 # control page and JSON/REST API over WiFi (ESPHome's built-in web_server),
 # instead of relying on Home Assistant's native "api:" integration.
 #
-# Hardware assumed below: a generic ESP32 DevKitV1 (either the micro-USB or
-# USB-C variant - they're the same WROOM module) plus a separate RS485
-# transceiver module (e.g. a MAX485 breakout), since these dev boards don't
-# have RS485 built in. See documentation/standalone.md for wiring/power
-# notes and documentation/devices.md if you'd rather use different ESP32
-# hardware (pin numbers will differ).
+# Hardware assumed below: the Waveshare ESP32-S3-RS485-CAN board (ESP32-S3-
+# WROOM-1, 16MB flash, 8MB PSRAM). It has an isolated RS485 transceiver and
+# a 7-36V DC screw terminal built in, so the tub's 12V wires straight into
+# it - no separate RS485 module, level shifting, or buck converter needed.
+# See documentation/standalone.md for wiring notes and documentation/
+# devices.md if you'd rather use different ESP32 hardware (pins differ).
 ##########################################################################
 
 esphome:
@@ -19,9 +19,16 @@ esphome:
   friendly_name: Hot Tub
 
 esp32:
-  board: esp32dev
+  board: esp32-s3-devkitc-1
+  variant: esp32s3
+  flash_size: 16MB
   framework:
     type: arduino
+
+# This board's WROOM-1 module has 8MB of octal PSRAM - enabling it gives
+# plenty of headroom for web_server plus the full set of entities below.
+psram:
+  mode: octal
 
 logger:
   baud_rate: 0
@@ -70,20 +77,21 @@ web_server:
 external_components:
   - source: github://jktightwad/esp-iq2020
 
-# GPIO16/17 (UART2) are free of boot-strapping duties on a standard
-# DevKitV1 board. No flow_control_pin here because this assumes an
-# auto-direction RS485 module (see documentation/standalone.md) - if you
-# use a plain MAX485 module instead, add a flow_control_pin line under
-# iq2020: for the GPIO wired to its DE/RE pins.
+# Pins for the Waveshare ESP32-S3-RS485-CAN board's onboard RS485
+# transceiver. GPIO21 is its direction/enable pin, wired internally to the
+# transceiver - nothing extra to wire up for flow control.
 uart:
   id: SpaConnection
   tx_pin: GPIO17
-  rx_pin: GPIO16
+  rx_pin: GPIO18
   baud_rate: 38400
+  parity: NONE
+  stop_bits: 1
+  rx_buffer_size: 1024
 
 iq2020:
   uart_id: SpaConnection
-  flow_control_pin: GPIO4
+  flow_control_pin: GPIO21
   polling_rate: 65
   # Optional raw RS485 traffic viewer port for the IQ2020 DataViewer tool
   # (see DataViewer/) - useful for debugging, has nothing to do with HA.
