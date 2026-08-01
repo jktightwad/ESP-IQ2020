@@ -18,6 +18,16 @@
   };
   var AUDIO_SOURCES = ["iPOD", "TV", "Aux", "Bluetooth"];
 
+  // Fixed presets from the manual's "MOODS" section on the Lights screen.
+  // "Magenta"/"Aqua" in the manual map to our closest available options
+  // (Violet/Cyan) since those are the exact colors the component supports.
+  var MOODS = [
+    { underwater: { color: "Blue", intensity: 5 }, bartop: { intensity: 0 }, pillow: { intensity: 0 }, exterior: { intensity: 0 } },
+    { underwater: { color: "Violet", intensity: 5 }, bartop: { color: "Cyan", intensity: 5 }, pillow: { color: "Cyan", intensity: 5 }, exterior: { intensity: 0 } },
+    { underwater: { color: "Cyan", intensity: 5 }, bartop: { intensity: 0 }, pillow: { color: "Cyan", intensity: 5 }, exterior: { intensity: 0 } },
+    { underwater: { intensity: 0 }, bartop: { intensity: 0 }, pillow: { color: "White", intensity: 5 }, exterior: { intensity: 0 } }
+  ];
+
   var state = {
     currentTempF: null,
     targetTempF: null,
@@ -233,6 +243,31 @@
     apiPost("/number/" + objectId + "/set", { value: v });
   }
 
+  function setNumber(objectId, value) {
+    apiPost("/number/" + objectId + "/set", { value: value });
+  }
+
+  function applyMood(index) {
+    var mood = MOODS[index];
+    LIGHT_ZONES.forEach(function (z) {
+      var setting = mood[z.key];
+      if (!setting) return;
+      if (setting.color) setSelect(z.colorId, setting.color);
+      setNumber(z.intensityId, setting.intensity);
+    });
+    if (!state.lights) toggleSwitch("lights", false);
+  }
+
+  function jetsMasterToggle() {
+    if (state.jets1 || state.jets2Level > 0) {
+      apiPost("/fan/jets_1/turn_off");
+      apiPost("/fan/jets_2/turn_off");
+    } else {
+      apiPost("/fan/jets_1/turn_on");
+      apiPost("/fan/jets_2/turn_on", { speed_level: 2 });
+    }
+  }
+
   // ---- Screen switching ----
   // Matches the physical remote's navigation model: the Home screen is an
   // icon-based launcher, and every other screen is full-screen for that
@@ -314,18 +349,16 @@
           '<span class="status-badge" id="badge-lock">Locked</span>' +
         '</div>' +
         '<div class="home-layout">' +
-          '<div class="temp-dial" id="home-dial">' +
-            '<span class="value"><span id="home-temp-value">--</span><span class="unit">°F</span></span>' +
-            '<span class="label" id="home-target-value"></span>' +
+          '<div class="functions-col">' +
+            '<div class="icon-tile" id="tile-clean" data-goto="clean"><span class="glyph">🧼</span><span class="name">Clean Cycle</span></div>' +
+            '<div class="icon-tile" data-goto="settings"><span class="glyph">⚙️</span><span class="name">Settings</span></div>' +
           '</div>' +
-          '<div class="icon-col">' +
-            '<div class="icon-section-label">Functions</div>' +
-            '<div class="icon-row">' +
-              '<div class="icon-tile" id="tile-clean" data-goto="clean"><span class="glyph">🧼</span><span class="name">Clean Cycle</span></div>' +
-              '<div class="icon-tile" data-goto="settings"><span class="glyph">⚙️</span><span class="name">Settings</span></div>' +
+          '<div class="home-main">' +
+            '<div class="temp-dial" id="home-dial">' +
+              '<span class="value"><span id="home-temp-value">--</span><span class="unit">°F</span></span>' +
+              '<span class="label" id="home-target-value"></span>' +
             '</div>' +
-            '<div class="icon-section-label">Features</div>' +
-            '<div class="icon-row">' +
+            '<div class="features-row">' +
               '<div class="icon-tile" data-goto="jets"><span class="glyph">🌀</span><span class="name">Jets</span></div>' +
               '<div class="icon-tile" id="tile-lights" data-goto="lights"><span class="glyph">💡</span><span class="name">Lights</span></div>' +
               '<div class="icon-tile" id="tile-music" data-goto="music"><span class="glyph">🎵</span><span class="name">Music</span></div>' +
@@ -336,12 +369,14 @@
 
       '<div class="screen" id="screen-temp">' +
         screenHeaderHtml("Set Temperature") +
-        '<div class="temp-adjust">' +
+        '<div class="temp-screen-body">' +
           '<div class="current" id="temp-current"></div>' +
-          '<div class="target"><span id="temp-target">--</span>°F</div>' +
-          '<div class="step-buttons">' +
-            '<button class="step-btn" id="temp-down">−</button>' +
-            '<button class="step-btn" id="temp-up">+</button>' +
+          '<div class="temp-adjust">' +
+            '<div class="target"><span id="temp-target">--</span>°F</div>' +
+            '<div class="step-buttons">' +
+              '<button class="step-btn" id="temp-up">▲</button>' +
+              '<button class="step-btn" id="temp-down">▼</button>' +
+            '</div>' +
           '</div>' +
           '<div class="range-note">Range: ' + MIN_F + '°F to ' + MAX_F + '°F</div>' +
         '</div>' +
@@ -349,26 +384,39 @@
 
       '<div class="screen" id="screen-jets">' +
         screenHeaderHtml("Jets") +
-        '<div class="jet-group">' +
-          '<div class="name">Jets 1</div>' +
+        '<div class="jets-row">' +
+          '<div class="row-number">1</div>' +
           '<div class="speed-buttons">' +
             '<button class="speed-btn" id="jets1-off">Off</button>' +
             '<button class="speed-btn" id="jets1-on">On</button>' +
           '</div>' +
         '</div>' +
-        '<div class="jet-group">' +
-          '<div class="name">Jets 2</div>' +
+        '<div class="jets-row">' +
+          '<div class="row-number">2</div>' +
           '<div class="speed-buttons">' +
             '<button class="speed-btn" id="jets2-off">Off</button>' +
             '<button class="speed-btn" id="jets2-low">Low</button>' +
             '<button class="speed-btn" id="jets2-high">High</button>' +
           '</div>' +
         '</div>' +
+        '<div class="jets-master-row">' +
+          '<button class="master-btn" id="jets-master" title="All jets off, or all on if off">⏻</button>' +
+        '</div>' +
       '</div>' +
 
       '<div class="screen" id="screen-lights">' +
         screenHeaderHtml("Lights") +
         '<div class="toggle-row"><span class="name">All Lights</span><div class="switch" id="lights-switch"><div class="knob"></div></div></div>' +
+        '<div class="stepper-label" style="margin: 12px 0 8px;">Moods</div>' +
+        '<div class="moods-row">' +
+          MOODS.map(function (m, i) { return '<button class="mood-btn" data-mood="' + i + '">' + (i + 1) + '</button>'; }).join("") +
+        '</div>' +
+        '<div class="stepper-label" style="margin-bottom: 8px;">All Lights - Color &amp; Brightness</div>' +
+        '<div class="all-lights-row">' +
+          '<div class="swatch-row">' + colorSwatchesHtml("all") + '</div>' +
+          '<button class="mini-btn" id="all-intensity-down">−</button>' +
+          '<button class="mini-btn" id="all-intensity-up">+</button>' +
+        '</div>' +
         LIGHT_ZONES.map(lightZoneHtml).join("") +
         '<div class="jet-group">' +
           '<div class="name">Cycle Speed</div>' +
@@ -436,11 +484,28 @@
       toggleSwitch("lights", state.lights);
     });
 
-    // Lights - per-zone color + intensity
+    // Lights - Moods presets
+    document.querySelectorAll("[data-mood]").forEach(function (el) {
+      el.addEventListener("click", function () { applyMood(parseInt(el.getAttribute("data-mood"), 10)); });
+    });
+
+    // Lights - All Lights quick color + brightness (applies to every zone)
+    q("all-intensity-down").addEventListener("click", function () {
+      LIGHT_ZONES.forEach(function (z) { stepNumber(z.intensityId, state.zones[z.key].intensity, -1, 0, 5); });
+    });
+    q("all-intensity-up").addEventListener("click", function () {
+      LIGHT_ZONES.forEach(function (z) { stepNumber(z.intensityId, state.zones[z.key].intensity, 1, 0, 5); });
+    });
+
+    // Lights - per-zone (and "all") color + intensity
     document.querySelectorAll(".color-swatch").forEach(function (el) {
       el.addEventListener("click", function () {
         var zoneKey = el.getAttribute("data-zone");
         var color = el.getAttribute("data-color");
+        if (zoneKey === "all") {
+          LIGHT_ZONES.forEach(function (z) { setSelect(z.colorId, color); });
+          return;
+        }
         var zone = LIGHT_ZONES.filter(function (z) { return z.key === zoneKey; })[0];
         if (zone) setSelect(zone.colorId, color);
       });
@@ -474,6 +539,7 @@
     q("jets2-off").addEventListener("click", function () { setJets2(0); });
     q("jets2-low").addEventListener("click", function () { setJets2(1); });
     q("jets2-high").addEventListener("click", function () { setJets2(2); });
+    q("jets-master").addEventListener("click", jetsMasterToggle);
 
     // Clean cycle
     q("clean-start-btn").addEventListener("click", function () {

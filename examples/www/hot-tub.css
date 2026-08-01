@@ -39,28 +39,34 @@ html, body {
   }
 }
 
-/* Home screen: dial on the left, function/feature icons on the right -
-   a landscape-friendly layout since #app is always styled for landscape
-   width (see rotation trick above), matching the physical remote's Home
-   screen (icon launcher) plus per-feature screens pattern. */
+/* Home screen: matches the remote's own layout - a persistent Functions
+   icon column on the left (Clean Cycle, Settings), the temperature dial
+   center, and a Features icon row along the bottom (Jets, Lights,
+   Music), rather than two side-by-side groups. */
 .home-layout {
   display: flex;
-  align-items: center;
-  gap: 32px;
+  flex: 1;
+  gap: 24px;
 }
-.home-layout .temp-dial { margin: 0; flex-shrink: 0; }
-.icon-col { flex: 1; }
-.icon-section-label {
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #6fb3d2;
-  margin: 0 0 8px;
-}
-.icon-section-label:not(:first-child) { margin-top: 18px; }
-.icon-row {
+.functions-col {
   display: flex;
+  flex-direction: column;
   gap: 12px;
+  width: 90px;
+  flex-shrink: 0;
+}
+.home-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+}
+.home-main .temp-dial { margin: 0; }
+.features-row {
+  display: flex;
+  gap: 14px;
+  width: 100%;
 }
 
 .screen {
@@ -70,6 +76,14 @@ html, body {
   display: none;
 }
 .screen.active { display: block; }
+
+/* Per-screen accent colors, matching the real remote (Jets = purple,
+   Lights = red, Music = green). Interactive elements below reference
+   var(--accent) with a blue fallback, so screens without an override
+   keep the default theme automatically. */
+#screen-jets { --accent: #a855f7; --accent-soft: #3b1064; background: radial-gradient(ellipse at top, #4c1d95, #1e0a3c 75%); margin: 0 -20px; padding-left: 20px; padding-right: 20px; }
+#screen-lights { --accent: #ef4444; --accent-soft: #5c1414; background: radial-gradient(ellipse at top, #7f1d1d, #2a0a0a 75%); margin: 0 -20px; padding-left: 20px; padding-right: 20px; }
+#screen-music { --accent: #22c55e; --accent-soft: #14401f; background: radial-gradient(ellipse at top, #14532d, #06210f 75%); margin: 0 -20px; padding-left: 20px; padding-right: 20px; }
 
 /* Every non-Home screen has this header instead of a persistent tab bar
    - matches the remote's own navigation, where each screen is full-
@@ -116,7 +130,7 @@ html, body {
   color: #6fb3d2;
 }
 .status-badge.on {
-  background: #1f6fa8;
+  background: var(--accent, #1f6fa8);
   color: #fff;
 }
 
@@ -161,18 +175,25 @@ html, body {
 }
 .icon-tile .glyph { font-size: 28px; display: block; margin-bottom: 8px; }
 .icon-tile .name { font-size: 13px; color: #cfe8f7; }
-.icon-tile.active { background: #1f6fa8; }
+.icon-tile.active { background: var(--accent, #1f6fa8); }
 
-/* Temperature screen */
-.temp-adjust {
+/* Temperature screen - up/down stacked vertically next to the number,
+   matching the physical remote rather than side-by-side buttons. */
+.temp-screen-body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 18px;
+  gap: 12px;
+  margin-top: 12px;
 }
-.temp-adjust .current {
+.temp-screen-body .current {
   font-size: 14px;
   color: #9cd0ec;
+}
+.temp-adjust {
+  display: flex;
+  align-items: center;
+  gap: 28px;
 }
 .temp-adjust .target {
   font-size: 72px;
@@ -180,16 +201,17 @@ html, body {
 }
 .step-buttons {
   display: flex;
-  gap: 24px;
+  flex-direction: column;
+  gap: 14px;
 }
 .step-btn {
-  width: 72px;
-  height: 72px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   border: none;
-  background: #1f6fa8;
+  background: var(--accent, #1f6fa8);
   color: #fff;
-  font-size: 32px;
+  font-size: 26px;
   cursor: pointer;
 }
 .step-btn:disabled {
@@ -235,6 +257,41 @@ html, body {
 .switch.on .knob { left: 25px; }
 
 /* Jets screen */
+.jets-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.jets-row .row-number {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent-soft, #14384f);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.jets-row .speed-buttons { flex: 1; }
+.jets-master-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+.master-btn {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent, #1f6fa8);
+  color: #fff;
+  font-size: 22px;
+  cursor: pointer;
+}
+
 .jet-group {
   margin-bottom: 28px;
 }
@@ -258,9 +315,37 @@ html, body {
   cursor: pointer;
 }
 .speed-btn.on {
-  background: #1f6fa8;
-  border-color: #2a80b8;
+  background: var(--accent, #1f6fa8);
+  border-color: var(--accent, #2a80b8);
 }
+
+/* Lights screen: Moods presets + All Lights master row */
+.moods-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.mood-btn {
+  flex: 1;
+  padding: 12px 0;
+  border-radius: 10px;
+  border: 1px solid #5c1414;
+  background: rgba(0,0,0,0.2);
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+}
+.mood-btn:active { background: var(--accent, #1f6fa8); }
+
+.all-lights-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+}
+.all-lights-row .swatch-row { margin-bottom: 0; }
 
 /* Color swatches (lights) */
 .swatch-row {
@@ -306,7 +391,7 @@ html, body {
   height: 36px;
   border-radius: 50%;
   border: none;
-  background: #1f6fa8;
+  background: var(--accent, #1f6fa8);
   color: #fff;
   font-size: 18px;
   cursor: pointer;
@@ -336,7 +421,7 @@ html, body {
   height: 160px;
   border-radius: 50%;
   border: none;
-  background: #1f6fa8;
+  background: var(--accent, #1f6fa8);
   color: #fff;
   font-size: 22px;
   text-transform: uppercase;
