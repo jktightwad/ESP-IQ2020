@@ -2,7 +2,6 @@
 #include "esphome/core/component.h"
 #include "esphome/components/socket/socket.h"
 #include "esphome/components/uart/uart.h"
-#include "esphome/components/api/custom_api_device.h"
 
 #ifdef USE_BINARY_SENSOR
 #include "esphome/components/binary_sensor/binary_sensor.h"
@@ -70,7 +69,7 @@
 #define BUTTON_CONFIRM_MANUAL_TEST 2
 #define NOT_SET -127
 
-class IQ2020Component : public esphome::Component, public esphome::api::CustomAPIDevice {
+class IQ2020Component : public esphome::Component {
 public:
 	IQ2020Component() = default;
 	explicit IQ2020Component(esphome::uart::UARTComponent *stream) : stream_{ stream } {}
