@@ -17,19 +17,47 @@ this repo, it differs in a few places:
   it's the one thing to remove to be fully independent of HA. You lose
   `esphome logs` over WiFi, but `web_server` version 3 has a built-in live
   log viewer in the browser, so this isn't a real loss.
-- **`web_server:` with `version: 3` and basic auth.** This serves the control
-  page and API at `http://hot-tub.local/` (or the device's IP). Every
-  sensor/switch/fan/climate entity you configure shows up automatically —
-  nothing extra to build. Basic auth is set because, unlike the Home
-  Assistant API (which requires an encrypted handshake), this page would
-  otherwise be open to anyone on your LAN.
+- **`web_server:` with a custom control page, no login.** `css_url`/`js_url`
+  are blanked out so ESPHome's own auto-generated dashboard never loads;
+  `css_include`/`js_include` (`examples/www/hot-tub.css` and `hot-tub.js`)
+  serve a custom page instead, modeled on the physical Spa Control panel
+  (see "Custom control page" below). There's no `auth:` block, so anyone
+  on the same network can open and use it - fine for a home LAN, but worth
+  knowing if that network isn't fully trusted.
 - **`ap:` fallback + `captive_portal:`.** Without Home Assistant's UI to
   reconfigure things, you want the device to fall back to its own access
   point if it can't join your WiFi, so you can always get back in.
 - **`time:` via `sntp`.** Home Assistant normally supplies the clock
   (`platform: homeassistant`); standalone, the ESP32 gets time from the
   internet instead. This is what lets you set the IQ2020's real-time clock
-  or build on-device schedules (see below) without any external hub.
+  and run the daily Clean Cycle schedule (see below) without any external
+  hub.
+
+## Custom control page
+
+`examples/www/hot-tub.js` and `hot-tub.css` replace ESPHome's default
+dashboard entirely with a small custom app modeled on the wireless remote's
+Spa Control screens: a Home screen with the current temperature and
+Jets/Lights/Clean Cycle/Settings tiles, a Temperature screen with up/down
+steppers, a Jets screen, and a Settings screen with the lock/timer toggles.
+
+It's plain HTML/CSS/JavaScript with no build step or external dependencies
+- it talks to the same JSON/REST API the default dashboard uses
+(`GET`/`POST /sensor/`, `/switch/`, `/fan/`, `/climate/<object_id>`), just
+with its own layout. If you want to change the look or add a screen, edit
+those two files directly and reflash - no separate frontend toolchain
+needed.
+
+**Temperature is shown and set entirely in Fahrenheit**, even though
+ESPHome's `climate` component only ever stores temperature internally as
+Celsius (that conversion normally happens inside Home Assistant, which
+this setup doesn't have). The custom page reads the tub's own Fahrenheit
+sensor values directly for display, and converts to Celsius in JavaScript
+only at the moment it sends a `set_temperature` command - so nothing
+Celsius-related is ever shown. The range is clamped to 80-104°F, matching
+the tub's own documented factory range; the controller itself will reject
+anything outside what it actually supports regardless of what the page
+allows.
 
 ## Hardware
 
@@ -75,10 +103,32 @@ If you use different ESP32 hardware instead, see
 ## On-device automation (still no Home Assistant)
 
 Because ESPHome runs its own logic on the ESP32, you can automate the tub
-without any hub in the loop. For example, to drop the temperature during a
-peak electricity window and raise it back in the evening, add something
-like this to your config (temperatures here are in Celsius regardless of
-the `climate:` display unit):
+without any hub in the loop. The example config already includes one of
+these: a daily Clean Cycle, triggered under the `time:` section's
+`on_time:` block:
+
+```yaml
+time:
+  - platform: sntp
+    id: sntp_time
+    timezone: America/Los_Angeles
+    on_time:
+      - seconds: 0
+        minutes: 0
+        hours: 5
+        then:
+          - switch.turn_on: clean_cycle_switch
+```
+
+This just turns the switch on once a day at the configured hour - the tub
+handles the actual ~10 minute run and auto-off itself, same as pressing
+Start on the physical remote. Change `hours`/`minutes` to whatever time you
+want it to run.
+
+Another example: dropping the temperature during a peak electricity window
+and raising it back in the evening. Add something like this to your config
+(temperatures here are in Celsius regardless of the custom page's
+Fahrenheit display - see [Custom control page](#custom-control-page)):
 
 ```yaml
 time:
@@ -102,6 +152,7 @@ time:
               target_temperature: 39
 ```
 
-This needs `id: hottub_climate` added to the `climate:` entry in your
-config. See [`extras.md`](extras.md#esp32-changing-temperature) for more on
-this pattern.
+The example config's `climate:` entry already has `id: hottub_climate` set
+so this works as-is. See
+[`extras.md`](extras.md#esp32-changing-temperature) for more on this
+pattern.

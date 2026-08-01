@@ -3,8 +3,11 @@
 #
 # This is the same IQ2020 protocol component used everywhere else in this
 # repo, but wired up so the ESP32 is the whole product: it serves its own
-# control page and JSON/REST API over WiFi (ESPHome's built-in web_server),
-# instead of relying on Home Assistant's native "api:" integration.
+# custom control page (www/hot-tub.js + www/hot-tub.css, modeled on the
+# physical Spa Control panel, with native Fahrenheit throughout) and JSON/
+# REST API over WiFi, instead of relying on Home Assistant's native "api:"
+# integration or ESPHome's default auto-generated dashboard. No login -
+# open to anyone on the same network.
 #
 # Hardware assumed below: the Waveshare ESP32-S3-RS485-CAN board (ESP32-S3-
 # WROOM-1, 16MB flash, 8MB PSRAM). It has an isolated RS485 transceiver and
@@ -56,23 +59,35 @@ wifi:
 captive_portal:
 
 # Local time source so the device has a real clock without needing Home
-# Assistant (used for the IQ2020 real-time clock and any on-device time
-# based automations you add later). Change the timezone to your own.
+# Assistant (used for the IQ2020 real-time clock and on-device schedules
+# like the daily Clean Cycle below). Change the timezone to your own.
 time:
   - platform: sntp
     id: sntp_time
     timezone: America/Los_Angeles
+    on_time:
+      # Runs Clean Cycle once a day. The tub handles the actual 10-minute
+      # run and auto-off itself (same as pressing Start on the physical
+      # remote) - this just triggers it. Change the hour/minute to taste.
+      - seconds: 0
+        minutes: 0
+        hours: 5
+        then:
+          - switch.turn_on: clean_cycle_switch
 
-# This is the standalone control surface: a mobile-friendly control page
-# plus a JSON/REST API, served directly by the ESP32 at
-# http://hot-tub.local/ (or its IP address). Every sensor/switch/fan/
-# climate entity defined below shows up here automatically.
+# This is the standalone control surface: a custom control page modeled on
+# the physical Spa Control panel, plus the JSON/REST API it runs on,
+# served directly by the ESP32 at http://hot-tub.local/ (or its IP
+# address). No login - anyone on the same network can open and use it.
+# css_url/js_url are blanked out so the default ESPHome dashboard doesn't
+# load at all; css_include/js_include serve our own page instead.
 web_server:
   version: 3
   port: 80
-  auth:
-    username: !secret web_username
-    password: !secret web_password
+  css_url: ""
+  css_include: "www/hot-tub.css"
+  js_url: ""
+  js_include: "www/hot-tub.js"
 
 external_components:
   - source: github://jktightwad/HotSprings_ControlPanel
@@ -159,6 +174,7 @@ fan:
 
 climate:
   - platform: iq2020
+    id: hottub_climate
     name: Temperature
     celsius: false
 
