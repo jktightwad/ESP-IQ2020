@@ -14,9 +14,36 @@ html, body {
   display: flex;
   flex-direction: column;
   height: 100%;
-  max-width: 480px;
+  max-width: 900px;
   margin: 0 auto;
 }
+
+/* Force landscape presentation on phones, since the physical Spa Control
+   remote this page is modeled on is a landscape device. This is a
+   CSS-only rotation trick (no orientation-lock permission needed): the
+   page is rotated to fill the screen as landscape no matter which way
+   the phone is actually being held. Doesn't apply to tablets/desktop,
+   which already have enough width to just show the layout normally. */
+@media screen and (max-width: 820px) and (orientation: portrait) {
+  html {
+    width: 100vh;
+    height: 100vw;
+    transform: rotate(90deg) translate(0, -100vh);
+    transform-origin: top left;
+    overflow: hidden;
+  }
+}
+
+/* Home screen: dial on the left, feature tiles on the right - a
+   landscape-friendly layout since #app is always styled for landscape
+   width (see rotation trick above). */
+.home-layout {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.home-layout .temp-dial { margin: 0; flex-shrink: 0; }
+.home-layout .icon-grid { flex: 1; grid-template-columns: repeat(3, 1fr); margin-top: 0; }
 
 .screen {
   flex: 1;

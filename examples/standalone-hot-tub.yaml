@@ -89,8 +89,12 @@ web_server:
   js_url: ""
   js_include: "www/hot-tub.js"
 
+# refresh: 0s forces a fresh fetch on every build instead of caching the
+# clone for a day (ESPHome's default) - worth keeping while this project
+# is under active development so a build always reflects the latest push.
 external_components:
   - source: github://jktightwad/HotSprings_ControlPanel
+    refresh: 0s
 
 # Pins for the Waveshare ESP32-S3-RS485-CAN board's onboard RS485
 # transceiver. GPIO21 is its direction/enable pin, wired internally to the

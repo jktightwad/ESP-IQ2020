@@ -283,7 +283,21 @@
 
   // ---- Build page ----
 
+  function ensureViewportMeta() {
+    // The page's own <head> is fixed by ESPHome and has no viewport meta
+    // tag at all, so without this a phone renders the layout at desktop
+    // width and zooms out to fit - everything looks tiny. Inject it
+    // ourselves since we can only add <link>/<script> tags via
+    // css_include/js_include, not arbitrary <head> content.
+    if (document.querySelector('meta[name="viewport"]')) return;
+    var meta = document.createElement("meta");
+    meta.name = "viewport";
+    meta.content = "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no";
+    document.head.appendChild(meta);
+  }
+
   function buildPage() {
+    ensureViewportMeta();
     var app = document.createElement("div");
     app.id = "app";
     app.innerHTML =
@@ -292,16 +306,18 @@
           '<span class="status-badge" id="badge-summer">Summer Timer</span>' +
           '<span class="status-badge" id="badge-lock">Locked</span>' +
         '</div>' +
-        '<div class="temp-dial" id="home-dial">' +
-          '<span class="value"><span id="home-temp-value">--</span><span class="unit">°F</span></span>' +
-          '<span class="label" id="home-target-value"></span>' +
-        '</div>' +
-        '<div class="icon-grid">' +
-          '<div class="icon-tile" data-goto="jets"><span class="glyph">🌀</span><span class="name">Jets</span></div>' +
-          '<div class="icon-tile" id="tile-lights" data-goto="lights"><span class="glyph">💡</span><span class="name">Lights</span></div>' +
-          '<div class="icon-tile" id="tile-music" data-goto="music"><span class="glyph">🎵</span><span class="name">Music</span></div>' +
-          '<div class="icon-tile" id="tile-clean" data-goto="clean"><span class="glyph">🧼</span><span class="name">Clean Cycle</span></div>' +
-          '<div class="icon-tile" data-goto="settings"><span class="glyph">⚙️</span><span class="name">Settings</span></div>' +
+        '<div class="home-layout">' +
+          '<div class="temp-dial" id="home-dial">' +
+            '<span class="value"><span id="home-temp-value">--</span><span class="unit">°F</span></span>' +
+            '<span class="label" id="home-target-value"></span>' +
+          '</div>' +
+          '<div class="icon-grid">' +
+            '<div class="icon-tile" data-goto="jets"><span class="glyph">🌀</span><span class="name">Jets</span></div>' +
+            '<div class="icon-tile" id="tile-lights" data-goto="lights"><span class="glyph">💡</span><span class="name">Lights</span></div>' +
+            '<div class="icon-tile" id="tile-music" data-goto="music"><span class="glyph">🎵</span><span class="name">Music</span></div>' +
+            '<div class="icon-tile" id="tile-clean" data-goto="clean"><span class="glyph">🧼</span><span class="name">Clean Cycle</span></div>' +
+            '<div class="icon-tile" data-goto="settings"><span class="glyph">⚙️</span><span class="name">Settings</span></div>' +
+          '</div>' +
         '</div>' +
       '</div>' +
 
