@@ -195,8 +195,8 @@
     setBadge("badge-summer", state.summerTimer);
     setBadge("badge-lock", state.spaLock || state.tempLock);
     setTile("tile-lights", state.lights);
-    setTile("tile-clean", state.cleanCycle);
     setTile("tile-music", state.audioPower);
+    setTile("tile-jets", state.jets1 || state.jets2Level > 0);
   }
 
   function setBadge(id, on) {
@@ -219,8 +219,26 @@
     q("temp-up").disabled = state.targetTempF == null || state.targetTempF >= MAX_F;
   }
 
+  function renderSegmentBar(idPrefix, value, max, segmentCount) {
+    var bar = q(idPrefix + "-bar");
+    if (!bar) return;
+    var filled = value == null ? 0 : Math.round((value / max) * segmentCount);
+    var segs = bar.querySelectorAll(".segment");
+    segs.forEach(function (seg, i) { seg.classList.toggle("filled", i < filled); });
+  }
+
   function renderLights() {
     q("alllights-power").classList.toggle("on", state.lights);
+    var allZoneIntensity = state.zones[state.selectedLightZone] ? state.zones[state.selectedLightZone].intensity : null;
+    // "All Lights" brightness bar reflects the currently-selected zone's
+    // intensity isn't quite right conceptually; show the max across zones
+    // that are on instead, as a reasonable stand-in for "overall" level.
+    var maxIntensity = 0;
+    LIGHT_ZONES.forEach(function (z) {
+      var v = state.zones[z.key].intensity;
+      if (v != null && v > maxIntensity) maxIntensity = v;
+    });
+    renderSegmentBar("alllights", maxIntensity, 5, 5);
     ["Off", "Slow", "Normal", "Fast"].forEach(function (speed) {
       var el = q("cyclespeed-" + speed);
       if (el) el.classList.toggle("on", state.lightsCycleSpeed === speed);
@@ -232,6 +250,8 @@
     LIGHT_ZONES.forEach(function (z) {
       var btn = q("zonebtn-" + z.key);
       if (btn) btn.classList.toggle("selected", state.selectedLightZone === z.key);
+      var preview = q("zonepreview-" + z.key);
+      if (preview) preview.style.backgroundColor = COLOR_SWATCH[state.zones[z.key].color] || "#555";
     });
     var zs = state.zones[state.selectedLightZone] || {};
     var editor = q("zone-editor-swatches");
@@ -240,14 +260,18 @@
         el.classList.toggle("selected", el.getAttribute("data-color") === zs.color);
       });
     }
-    var valueEl = q("zone-editor-value");
-    if (valueEl) valueEl.textContent = zs.intensity != null ? zs.intensity : "--";
+    renderSegmentBar("zone-editor", zs.intensity, 5, 5);
   }
 
   function renderSettings() {
-    setSwitchEl("templock-switch", state.tempLock);
-    setSwitchEl("spalock-switch", state.spaLock);
-    setSwitchEl("summer-switch", state.summerTimer);
+    renderOnOff("templock", state.tempLock);
+    renderOnOff("spalock", state.spaLock);
+    renderOnOff("summer", state.summerTimer);
+  }
+
+  function renderOnOff(idPrefix, isOn) {
+    q(idPrefix + "-off").classList.toggle("on", !isOn);
+    q(idPrefix + "-on").classList.toggle("on", isOn);
   }
 
   function renderClean() {
@@ -273,25 +297,26 @@
   }
 
   function renderMusic() {
-    setSwitchEl("audio-switch", state.audioPower);
+    q("music-power-btn").classList.toggle("on", state.audioPower);
+    q("music-status").style.display = state.audioPower ? "none" : "";
+    q("music-body").style.display = state.audioPower ? "" : "none";
     AUDIO_SOURCES.forEach(function (src) {
       var el = q("source-" + src);
       if (el) el.classList.toggle("on", state.audioSource === src);
     });
-    q("volume-value").textContent = state.volume != null ? state.volume : "--";
-    q("treble-value").textContent = state.treble != null ? state.treble : "--";
-    q("bass-value").textContent = state.bass != null ? state.bass : "--";
-    q("balance-value").textContent = state.balance != null ? state.balance : "--";
+    renderSegmentBar("volume", state.volume, 100, 10);
+    q("bass-value").textContent = formatSigned(state.bass);
+    q("treble-value").textContent = formatSigned(state.treble);
+    q("balance-value").textContent = formatSigned(state.balance);
     q("subwoofer-value").textContent = state.subwoofer != null ? state.subwoofer : "--";
     q("now-playing").textContent = state.songTitle || state.artistName
       ? (state.songTitle + (state.artistName ? " — " + state.artistName : ""))
       : "";
   }
 
-  function setSwitchEl(id, on) {
-    var el = q(id);
-    if (!el) return;
-    el.classList.toggle("on", !!on);
+  function formatSigned(v) {
+    if (v == null) return "--";
+    return v > 0 ? "+" + v : String(v);
   }
 
   // ---- Actions ----
@@ -340,6 +365,16 @@
     if (!state.lights) toggleSwitch("lights", false);
   }
 
+  // Home screen's Jets icon (as opposed to the Jets screen's own controls)
+  // - per the manual, pressing it turns jets on at low speed if they're
+  // currently off, in addition to navigating to the Jets screen.
+  function jetsTileTap() {
+    if (!state.jets1 && state.jets2Level === 0) {
+      apiPost("/fan/jets_1/turn_on");
+      apiPost("/fan/jets_2/turn_on", { speed_level: 1 });
+    }
+  }
+
   function jetsMasterToggle() {
     if (state.jets1 || state.jets2Level > 0) {
       apiPost("/fan/jets_1/turn_off");
@@ -350,14 +385,33 @@
     }
   }
 
+  // Sidebar Power button - documented behavior: if jets/lights/music are
+  // all off, turn jets on high and lights on blue; if anything's on, turn
+  // jets, lights, and music all off.
+  function globalPowerToggle() {
+    var anyOn = state.jets1 || state.jets2Level > 0 || state.lights || state.audioPower;
+    if (anyOn) {
+      apiPost("/fan/jets_1/turn_off");
+      apiPost("/fan/jets_2/turn_off");
+      if (state.lights) toggleSwitch("lights", true);
+      if (state.audioPower) toggleSwitch("audio", true);
+    } else {
+      apiPost("/fan/jets_1/turn_on");
+      apiPost("/fan/jets_2/turn_on", { speed_level: 2 });
+      if (!state.lights) toggleSwitch("lights", false);
+      LIGHT_ZONES.forEach(function (z) { setSelect(z.colorId, "Blue"); });
+    }
+  }
+
   // ---- Screen switching ----
-  // Matches the physical remote's navigation model: the Home screen is an
-  // icon-based launcher, and every other screen is full-screen for that
-  // one feature with a Home icon (top-left) to go back - no persistent
-  // tab bar.
+  // The left icon sidebar (Power/Clean Cycle/Settings) is persistent
+  // across every screen, matching the physical remote - it's rendered
+  // once, outside the swappable content panels below. Each content panel
+  // has its own small Home icon to jump back to the main temperature/
+  // features view.
 
   function showScreen(name) {
-    ["home", "temp", "jets", "lights", "lights-zones", "music", "clean", "settings"].forEach(function (n) {
+    ["home", "temp", "jets", "lights", "lights-zones", "music", "music-detail", "clean", "settings"].forEach(function (n) {
       q("screen-" + n).classList.toggle("active", n === name);
     });
   }
@@ -379,13 +433,47 @@
     }).join("");
   }
 
-  function numberRowHtml(id, label, min, max) {
+  function segmentsHtml(count) {
+    var out = "";
+    for (var i = 0; i < count; i++) out += '<span class="segment"></span>';
+    return out;
+  }
+
+  // Bar-style adjuster (chevron / segmented bar / chevron) - used for
+  // brightness and volume, matching the manual's segmented-bar controls.
+  function barAdjusterHtml(idPrefix, segmentCount) {
     return (
-      '<div class="stepper-row wide">' +
-        '<span class="stepper-label">' + label + '</span>' +
-        '<button class="mini-btn" data-num-down="' + id + '" data-min="' + min + '" data-max="' + max + '">−</button>' +
-        '<span class="stepper-value" id="' + id + '-value">--</span>' +
-        '<button class="mini-btn" data-num-up="' + id + '" data-min="' + min + '" data-max="' + max + '">+</button>' +
+      '<div class="adjuster-pill">' +
+        '<button class="chev" data-adj-down="' + idPrefix + '">◀</button>' +
+        '<div class="segment-bar" id="' + idPrefix + '-bar">' + segmentsHtml(segmentCount) + '</div>' +
+        '<button class="chev" data-adj-up="' + idPrefix + '">▶</button>' +
+      '</div>'
+    );
+  }
+
+  // Numeric-value adjuster (chevron / signed number / chevron) with a
+  // label to the right - used for Bass/Treble/Balance/Subwoofer.
+  function numericAdjusterRowHtml(id, label) {
+    return (
+      '<div class="setting-row">' +
+        '<div class="adjuster-pill">' +
+          '<button class="chev" data-adj-down="' + id + '">◀</button>' +
+          '<span class="adjuster-value" id="' + id + '-value">--</span>' +
+          '<button class="chev" data-adj-up="' + id + '">▶</button>' +
+        '</div>' +
+        '<span class="setting-label">' + label + '</span>' +
+      '</div>'
+    );
+  }
+
+  function onOffRowHtml(idPrefix, label) {
+    return (
+      '<div class="setting-row">' +
+        '<div class="speed-buttons">' +
+          '<button class="speed-btn" id="' + idPrefix + '-off">OFF</button>' +
+          '<button class="speed-btn" id="' + idPrefix + '-on">ON</button>' +
+        '</div>' +
+        '<span class="setting-label">' + label + '</span>' +
       '</div>'
     );
   }
@@ -410,27 +498,30 @@
     var app = document.createElement("div");
     app.id = "app";
     app.innerHTML =
+      // Persistent sidebar - present on every screen, matching the real
+      // remote (confirmed by it still being visible, dimmed, behind the
+      // Clean Cycle panel in the manual). Memory isn't included since
+      // there's no backing "last active settings" data to restore.
+      '<div class="app-sidebar">' +
+        '<button class="icon-tile sidebar-tile" id="global-power-btn" title="All off, or jets+lights on if off"><span class="glyph">⏻</span></button>' +
+        '<button class="icon-tile sidebar-tile" data-goto="clean"><span class="glyph">🧼</span></button>' +
+        '<button class="icon-tile sidebar-tile" data-goto="settings"><span class="glyph">⚙️</span></button>' +
+      '</div>' +
+      '<div class="app-content">' +
+
       '<div class="screen active" id="screen-home">' +
         '<div class="status-row">' +
           '<span class="status-badge" id="badge-summer">Summer Timer</span>' +
           '<span class="status-badge" id="badge-lock">Locked</span>' +
         '</div>' +
-        '<div class="home-layout">' +
-          '<div class="functions-col">' +
-            '<div class="icon-tile" id="tile-clean" data-goto="clean"><span class="glyph">🧼</span><span class="name">Clean Cycle</span></div>' +
-            '<div class="icon-tile" data-goto="settings"><span class="glyph">⚙️</span><span class="name">Settings</span></div>' +
-          '</div>' +
-          '<div class="home-main">' +
-            '<div class="temp-dial" id="home-dial">' +
-              '<span class="value"><span id="home-temp-value">--</span><span class="unit">°F</span></span>' +
-              '<span class="label" id="home-target-value"></span>' +
-            '</div>' +
-            '<div class="features-row">' +
-              '<div class="icon-tile" data-goto="jets"><span class="glyph">🌀</span><span class="name">Jets</span></div>' +
-              '<div class="icon-tile" id="tile-lights" data-goto="lights"><span class="glyph">💡</span><span class="name">Lights</span></div>' +
-              '<div class="icon-tile" id="tile-music" data-goto="music"><span class="glyph">🎵</span><span class="name">Music</span></div>' +
-            '</div>' +
-          '</div>' +
+        '<div class="temp-tile" id="home-dial">' +
+          '<span class="value"><span id="home-temp-value">--</span><span class="unit">°F</span></span>' +
+          '<span class="label" id="home-target-value"></span>' +
+        '</div>' +
+        '<div class="features-row">' +
+          '<div class="icon-tile feature-jets" id="tile-jets" data-goto="jets"><span class="glyph">🌀</span><span class="name">Jets</span></div>' +
+          '<div class="icon-tile feature-music" id="tile-music" data-goto="music"><span class="glyph">🎵</span><span class="name">Music</span></div>' +
+          '<div class="icon-tile feature-lights" id="tile-lights" data-goto="lights"><span class="glyph">💡</span><span class="name">Lights</span></div>' +
         '</div>' +
       '</div>' +
 
@@ -452,18 +543,18 @@
       '<div class="screen" id="screen-jets">' +
         screenHeaderHtml("Jets") +
         '<div class="jets-row">' +
-          '<div class="row-number">1</div>' +
+          '<span class="row-number-text">1</span>' +
           '<div class="speed-buttons">' +
-            '<button class="speed-btn" id="jets1-off">Off</button>' +
-            '<button class="speed-btn" id="jets1-on">On</button>' +
+            '<button class="speed-btn" id="jets1-off">OFF</button>' +
+            '<button class="speed-btn icon-only" id="jets1-on">🌀</button>' +
           '</div>' +
         '</div>' +
         '<div class="jets-row">' +
-          '<div class="row-number">2</div>' +
+          '<span class="row-number-text">2</span>' +
           '<div class="speed-buttons">' +
-            '<button class="speed-btn" id="jets2-off">Off</button>' +
-            '<button class="speed-btn" id="jets2-low">Low</button>' +
-            '<button class="speed-btn" id="jets2-high">High</button>' +
+            '<button class="speed-btn" id="jets2-off">OFF</button>' +
+            '<button class="speed-btn icon-only" id="jets2-low">🌀</button>' +
+            '<button class="speed-btn icon-only" id="jets2-high">🌀🌀</button>' +
           '</div>' +
         '</div>' +
         '<div class="jets-master-row">' +
@@ -479,12 +570,12 @@
             MOODS.map(function (m, i) { return '<button class="mood-btn" data-mood="' + i + '">' + (i + 1) + '</button>'; }).join("") +
           '</div>' +
           '<div class="lights-main">' +
-            '<div class="all-lights-row">' +
-              '<button class="mini-btn" id="alllights-power">⏻</button>' +
-              '<div class="swatch-row">' + colorSwatchesHtml("all") + '</div>' +
-              '<button class="mini-btn" id="all-intensity-down">−</button>' +
-              '<button class="mini-btn" id="all-intensity-up">+</button>' +
+            '<div class="icon-section-label">All Lights</div>' +
+            '<div class="all-lights-top-row">' +
+              barAdjusterHtml("alllights", 5) +
+              '<button class="master-btn" id="alllights-power">⏻</button>' +
             '</div>' +
+            '<div class="swatch-grid">' + colorSwatchesHtml("all") + '</div>' +
             '<div class="icon-section-label">Cycle Speed</div>' +
             '<div class="speed-buttons">' +
               '<button class="speed-btn" id="cyclespeed-Off">Off</button>' +
@@ -500,42 +591,55 @@
       '</div>' +
 
       '<div class="screen" id="screen-lights-zones">' +
-        '<div class="screen-header">' +
-          '<div class="home-btn" data-goto="lights">◀</div>' +
-          '<div class="header-title">Lights: Zones</div>' +
-        '</div>' +
+        screenHeaderHtml("Lights: Zones") +
         '<div class="zone-picker">' +
           '<div class="zone-list">' +
-            LIGHT_ZONES.map(function (z) { return '<button class="zone-btn" id="zonebtn-' + z.key + '" data-zone-select="' + z.key + '">' + z.label + '</button>'; }).join("") +
+            LIGHT_ZONES.map(function (z) {
+              return '<button class="zone-btn" id="zonebtn-' + z.key + '" data-zone-select="' + z.key + '">' +
+                '<span class="zone-color-preview" id="zonepreview-' + z.key + '"></span>' + z.label +
+              '</button>';
+            }).join("") +
           '</div>' +
           '<div class="zone-editor">' +
-            '<div class="swatch-row" id="zone-editor-swatches">' + colorSwatchesHtml("selected") + '</div>' +
-            '<div class="stepper-row wide">' +
-              '<span class="stepper-label">Intensity</span>' +
-              '<button class="mini-btn" id="zone-editor-down">−</button>' +
-              '<span class="stepper-value" id="zone-editor-value">--</span>' +
-              '<button class="mini-btn" id="zone-editor-up">+</button>' +
-            '</div>' +
+            barAdjusterHtml("zone-editor", 5) +
+            '<div class="swatch-grid" id="zone-editor-swatches">' + colorSwatchesHtml("selected") + '</div>' +
           '</div>' +
+        '</div>' +
+        '<div class="advance-row">' +
+          '<button class="master-btn" data-goto="lights">◀</button>' +
         '</div>' +
       '</div>' +
 
       '<div class="screen" id="screen-music">' +
         screenHeaderHtml("Music") +
-        '<div class="toggle-row"><span class="name">Power</span><div class="switch" id="audio-switch"><div class="knob"></div></div></div>' +
-        '<div class="jet-group">' +
-          '<div class="name">Source</div>' +
+        '<div class="music-power-row">' +
+          '<span class="music-status" id="music-status">OFF</span>' +
+          '<button class="master-btn" id="music-power-btn">⏻</button>' +
+        '</div>' +
+        '<div class="music-body" id="music-body">' +
+          '<div class="now-playing" id="now-playing"></div>' +
+          '<div class="icon-section-label">Volume</div>' +
+          barAdjusterHtml("volume", 10) +
+          '<div class="icon-section-label">Source</div>' +
           '<div class="speed-buttons">' +
             AUDIO_SOURCES.map(function (s) { return '<button class="speed-btn" id="source-' + s + '">' + s + '</button>'; }).join("") +
           '</div>' +
+          '<div class="advance-row">' +
+            '<button class="master-btn" data-goto="music-detail">▶</button>' +
+          '</div>' +
         '</div>' +
-        '<div class="now-playing" id="now-playing"></div>' +
-        numberRowHtml("volume", "Volume", 0, 100) +
-        numberRowHtml("treble", "Treble", -5, 5) +
-        numberRowHtml("bass", "Bass", -5, 5) +
-        numberRowHtml("balance", "Balance", -5, 5) +
-        numberRowHtml("subwoofer", "Subwoofer", 0, 11) +
-        '<div class="range-note">Treble/Bass/Balance: the tub\'s own firmware won\'t accept negative values set from here - only shows correctly if set from the physical remote.</div>' +
+      '</div>' +
+
+      '<div class="screen" id="screen-music-detail">' +
+        screenHeaderHtml("Music") +
+        numericAdjusterRowHtml("bass", "Bass") +
+        numericAdjusterRowHtml("treble", "Treble") +
+        numericAdjusterRowHtml("balance", "Balance") +
+        numericAdjusterRowHtml("subwoofer", "Subwoofer") +
+        '<div class="range-note">Bass/Treble/Balance won\'t accept negative values set from here - a firmware quirk on the tub\'s side, only shows correctly if set from the physical remote.</div>' +
+        '<div class="advance-row">' +
+          '<button class="master-btn" data-goto="music">◀</button>' +
+        '</div>' +
       '</div>' +
 
       '<div class="screen" id="screen-clean">' +
@@ -548,10 +652,12 @@
 
       '<div class="screen" id="screen-settings">' +
         screenHeaderHtml("Settings") +
-        '<div class="toggle-row"><span class="name">Temperature Lock</span><div class="switch" id="templock-switch"><div class="knob"></div></div></div>' +
-        '<div class="toggle-row"><span class="name">Spa Lock</span><div class="switch" id="spalock-switch"><div class="knob"></div></div></div>' +
-        '<div class="toggle-row"><span class="name">Summer Timer</span><div class="switch" id="summer-switch"><div class="knob"></div></div></div>' +
-      '</div>';
+        onOffRowHtml("templock", "Temperature Lock") +
+        onOffRowHtml("spalock", "Spa Lock") +
+        onOffRowHtml("summer", "Summer Timer") +
+      '</div>' +
+
+      '</div>'; // .app-content
 
     document.body.innerHTML = "";
     document.body.appendChild(app);
@@ -561,6 +667,8 @@
       el.addEventListener("click", function () { showScreen(el.getAttribute("data-goto")); });
     });
     q("home-dial").addEventListener("click", function () { showScreen("temp"); });
+    q("global-power-btn").addEventListener("click", globalPowerToggle);
+    q("tile-jets").addEventListener("click", jetsTileTap);
 
     // Temperature controls
     q("temp-up").addEventListener("click", function () {
@@ -570,22 +678,24 @@
       if (state.targetTempF != null) setTargetTempF(state.targetTempF - 1);
     });
 
-    // Lights - All Lights power icon
+    // Lights - All Lights power icon + brightness (applies to every zone)
     q("alllights-power").addEventListener("click", function () {
       toggleSwitch("lights", state.lights);
+    });
+    document.querySelectorAll("[data-adj-down='alllights']").forEach(function (el) {
+      el.addEventListener("click", function () {
+        LIGHT_ZONES.forEach(function (z) { stepNumber(z.intensityId, state.zones[z.key].intensity, -1, 0, 5); });
+      });
+    });
+    document.querySelectorAll("[data-adj-up='alllights']").forEach(function (el) {
+      el.addEventListener("click", function () {
+        LIGHT_ZONES.forEach(function (z) { stepNumber(z.intensityId, state.zones[z.key].intensity, 1, 0, 5); });
+      });
     });
 
     // Lights - Moods presets
     document.querySelectorAll("[data-mood]").forEach(function (el) {
       el.addEventListener("click", function () { applyMood(parseInt(el.getAttribute("data-mood"), 10)); });
-    });
-
-    // Lights - All Lights quick color + brightness (applies to every zone)
-    q("all-intensity-down").addEventListener("click", function () {
-      LIGHT_ZONES.forEach(function (z) { stepNumber(z.intensityId, state.zones[z.key].intensity, -1, 0, 5); });
-    });
-    q("all-intensity-up").addEventListener("click", function () {
-      LIGHT_ZONES.forEach(function (z) { stepNumber(z.intensityId, state.zones[z.key].intensity, 1, 0, 5); });
     });
 
     ["Off", "Slow", "Normal", "Fast"].forEach(function (speed) {
@@ -599,13 +709,17 @@
         renderLightsZones();
       });
     });
-    q("zone-editor-down").addEventListener("click", function () {
-      var zone = state.selectedLightZone;
-      stepNumber(LIGHT_ZONES.filter(function (z) { return z.key === zone; })[0].intensityId, state.zones[zone].intensity, -1, 0, 5);
+    document.querySelectorAll("[data-adj-down='zone-editor']").forEach(function (el) {
+      el.addEventListener("click", function () {
+        var zone = state.selectedLightZone;
+        stepNumber(LIGHT_ZONES.filter(function (z) { return z.key === zone; })[0].intensityId, state.zones[zone].intensity, -1, 0, 5);
+      });
     });
-    q("zone-editor-up").addEventListener("click", function () {
-      var zone = state.selectedLightZone;
-      stepNumber(LIGHT_ZONES.filter(function (z) { return z.key === zone; })[0].intensityId, state.zones[zone].intensity, 1, 0, 5);
+    document.querySelectorAll("[data-adj-up='zone-editor']").forEach(function (el) {
+      el.addEventListener("click", function () {
+        var zone = state.selectedLightZone;
+        stepNumber(LIGHT_ZONES.filter(function (z) { return z.key === zone; })[0].intensityId, state.zones[zone].intensity, 1, 0, 5);
+      });
     });
 
     // Color swatches: "all" (All Lights row) applies to every zone, "selected"
@@ -623,10 +737,13 @@
       });
     });
 
-    // Settings toggles
-    q("templock-switch").addEventListener("click", function () { toggleSwitch("temperature_lock", state.tempLock); });
-    q("spalock-switch").addEventListener("click", function () { toggleSwitch("spa_lock", state.spaLock); });
-    q("summer-switch").addEventListener("click", function () { toggleSwitch("summer_timer", state.summerTimer); });
+    // Settings on/off pairs
+    q("templock-off").addEventListener("click", function () { apiPost("/switch/temperature_lock/turn_off"); });
+    q("templock-on").addEventListener("click", function () { apiPost("/switch/temperature_lock/turn_on"); });
+    q("spalock-off").addEventListener("click", function () { apiPost("/switch/spa_lock/turn_off"); });
+    q("spalock-on").addEventListener("click", function () { apiPost("/switch/spa_lock/turn_on"); });
+    q("summer-off").addEventListener("click", function () { apiPost("/switch/summer_timer/turn_off"); });
+    q("summer-on").addEventListener("click", function () { apiPost("/switch/summer_timer/turn_on"); });
 
     // Jets
     q("jets1-off").addEventListener("click", function () { apiPost("/fan/jets_1/turn_off"); });
@@ -642,20 +759,29 @@
     });
 
     // Music
-    q("audio-switch").addEventListener("click", function () { toggleSwitch("audio", state.audioPower); });
+    q("music-power-btn").addEventListener("click", function () { toggleSwitch("audio", state.audioPower); });
     AUDIO_SOURCES.forEach(function (src) {
       q("source-" + src).addEventListener("click", function () { setSelect("audio_source", src); });
     });
-    document.querySelectorAll("[data-num-down]").forEach(function (el) {
-      el.addEventListener("click", function () {
-        var id = el.getAttribute("data-num-down");
-        stepNumber(id, state[id], id === "volume" ? -4 : -1, parseFloat(el.getAttribute("data-min")), parseFloat(el.getAttribute("data-max")));
-      });
+    document.querySelectorAll("[data-adj-down='volume']").forEach(function (el) {
+      el.addEventListener("click", function () { stepNumber("volume", state.volume, -4, 0, 100); });
     });
-    document.querySelectorAll("[data-num-up]").forEach(function (el) {
-      el.addEventListener("click", function () {
-        var id = el.getAttribute("data-num-up");
-        stepNumber(id, state[id], id === "volume" ? 4 : 1, parseFloat(el.getAttribute("data-min")), parseFloat(el.getAttribute("data-max")));
+    document.querySelectorAll("[data-adj-up='volume']").forEach(function (el) {
+      el.addEventListener("click", function () { stepNumber("volume", state.volume, 4, 0, 100); });
+    });
+    var MUSIC_ADJUSTERS = {
+      bass: { min: -5, max: 5 },
+      treble: { min: -5, max: 5 },
+      balance: { min: -5, max: 5 },
+      subwoofer: { min: 0, max: 11 }
+    };
+    Object.keys(MUSIC_ADJUSTERS).forEach(function (id) {
+      var range = MUSIC_ADJUSTERS[id];
+      document.querySelectorAll("[data-adj-down='" + id + "']").forEach(function (el) {
+        el.addEventListener("click", function () { stepNumber(id, state[id], -1, range.min, range.max); });
+      });
+      document.querySelectorAll("[data-adj-up='" + id + "']").forEach(function (el) {
+        el.addEventListener("click", function () { stepNumber(id, state[id], 1, range.min, range.max); });
       });
     });
   }
