@@ -82,7 +82,7 @@ html, body {
    var(--accent) with a blue fallback, so screens without an override
    keep the default theme automatically. */
 #screen-jets { --accent: #a855f7; --accent-soft: #3b1064; background: radial-gradient(ellipse at top, #4c1d95, #1e0a3c 75%); margin: 0 -20px; padding-left: 20px; padding-right: 20px; }
-#screen-lights { --accent: #ef4444; --accent-soft: #5c1414; background: radial-gradient(ellipse at top, #7f1d1d, #2a0a0a 75%); margin: 0 -20px; padding-left: 20px; padding-right: 20px; }
+#screen-lights, #screen-lights-zones { --accent: #ef4444; --accent-soft: #5c1414; background: radial-gradient(ellipse at top, #7f1d1d, #2a0a0a 75%); margin: 0 -20px; padding-left: 20px; padding-right: 20px; }
 #screen-music { --accent: #22c55e; --accent-soft: #14401f; background: radial-gradient(ellipse at top, #14532d, #06210f 75%); margin: 0 -20px; padding-left: 20px; padding-right: 20px; }
 
 /* Every non-Home screen has this header instead of a persistent tab bar
@@ -319,14 +319,22 @@ html, body {
   border-color: var(--accent, #2a80b8);
 }
 
-/* Lights screen: Moods presets + All Lights master row */
-.moods-row {
+/* Lights screen: Moods is a persistent left column (like the real
+   remote's layout), main content (All Lights, Cycle Speed) on the
+   right, rather than everything stacked in one vertical flow. */
+.lights-layout {
   display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: 24px;
 }
+.moods-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 70px;
+  flex-shrink: 0;
+}
+.lights-main { flex: 1; min-width: 0; }
 .mood-btn {
-  flex: 1;
   padding: 12px 0;
   border-radius: 10px;
   border: 1px solid #5c1414;
@@ -345,7 +353,7 @@ html, body {
   padding-bottom: 16px;
   border-bottom: 1px solid rgba(255,255,255,0.15);
 }
-.all-lights-row .swatch-row { margin-bottom: 0; flex: 1; flex-wrap: nowrap; }
+.all-lights-row .swatch-row { margin-bottom: 0; flex: 1; }
 #alllights-power.on { background: #1f9d55; }
 
 .advance-row {

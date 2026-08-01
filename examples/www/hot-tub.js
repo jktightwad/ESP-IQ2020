@@ -473,25 +473,29 @@
 
       '<div class="screen" id="screen-lights">' +
         screenHeaderHtml("Lights") +
-        '<div class="all-lights-row">' +
-          '<button class="mini-btn" id="alllights-power">⏻</button>' +
-          '<div class="swatch-row">' + colorSwatchesHtml("all") + '</div>' +
-          '<button class="mini-btn" id="all-intensity-down">−</button>' +
-          '<button class="mini-btn" id="all-intensity-up">+</button>' +
-        '</div>' +
-        '<div class="icon-section-label">Moods</div>' +
-        '<div class="moods-row">' +
-          MOODS.map(function (m, i) { return '<button class="mood-btn" data-mood="' + i + '">' + (i + 1) + '</button>'; }).join("") +
-        '</div>' +
-        '<div class="icon-section-label">Cycle Speed</div>' +
-        '<div class="speed-buttons">' +
-          '<button class="speed-btn" id="cyclespeed-Off">Off</button>' +
-          '<button class="speed-btn" id="cyclespeed-Slow">Slow</button>' +
-          '<button class="speed-btn" id="cyclespeed-Normal">Normal</button>' +
-          '<button class="speed-btn" id="cyclespeed-Fast">Fast</button>' +
-        '</div>' +
-        '<div class="advance-row">' +
-          '<button class="master-btn" data-goto="lights-zones">▶</button>' +
+        '<div class="lights-layout">' +
+          '<div class="moods-col">' +
+            '<div class="icon-section-label">Moods</div>' +
+            MOODS.map(function (m, i) { return '<button class="mood-btn" data-mood="' + i + '">' + (i + 1) + '</button>'; }).join("") +
+          '</div>' +
+          '<div class="lights-main">' +
+            '<div class="all-lights-row">' +
+              '<button class="mini-btn" id="alllights-power">⏻</button>' +
+              '<div class="swatch-row">' + colorSwatchesHtml("all") + '</div>' +
+              '<button class="mini-btn" id="all-intensity-down">−</button>' +
+              '<button class="mini-btn" id="all-intensity-up">+</button>' +
+            '</div>' +
+            '<div class="icon-section-label">Cycle Speed</div>' +
+            '<div class="speed-buttons">' +
+              '<button class="speed-btn" id="cyclespeed-Off">Off</button>' +
+              '<button class="speed-btn" id="cyclespeed-Slow">Slow</button>' +
+              '<button class="speed-btn" id="cyclespeed-Normal">Normal</button>' +
+              '<button class="speed-btn" id="cyclespeed-Fast">Fast</button>' +
+            '</div>' +
+            '<div class="advance-row">' +
+              '<button class="master-btn" data-goto="lights-zones">▶</button>' +
+            '</div>' +
+          '</div>' +
         '</div>' +
       '</div>' +
 
