@@ -53,6 +53,7 @@ html, body {
   background: #0f2436;
   border-right: 1px solid #1e4a67;
 }
+.app-sidebar.hidden { display: none; }
 .sidebar-tile {
   flex: none;
   width: 52px;
@@ -78,6 +79,7 @@ html, body {
 }
 .screen.active { display: block; }
 #screen-home.active { display: flex; flex-direction: column; }
+#screen-temp.active { display: flex; flex-direction: column; }
 
 /* Per-screen accent colors, matching the real remote (Jets = purple,
    Lights = red, Music = green). Interactive elements below reference
@@ -203,35 +205,32 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  margin-top: 12px;
-}
-.temp-screen-body .current {
-  font-size: 14px;
-  color: #9cd0ec;
+  justify-content: center;
+  flex: 1;
 }
 .temp-adjust {
   display: flex;
   align-items: center;
-  gap: 28px;
+  gap: 36px;
 }
 .temp-adjust .target {
-  font-size: 72px;
+  font-size: 120px;
   font-weight: 700;
+  line-height: 1;
 }
 .step-buttons {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 18px;
 }
 .step-btn {
-  width: 56px;
-  height: 56px;
+  width: 68px;
+  height: 68px;
   border-radius: 50%;
   border: none;
   background: var(--accent, #1f6fa8);
   color: #fff;
-  font-size: 26px;
+  font-size: 30px;
   cursor: pointer;
 }
 .step-btn:disabled {
@@ -309,9 +308,16 @@ html, body {
   margin-bottom: 20px;
 }
 .row-number-text {
-  font-size: 15px;
-  color: #cfe8f7;
-  width: 18px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent-soft, #14384f);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
 }
 .jets-row .speed-buttons { flex: 1; }

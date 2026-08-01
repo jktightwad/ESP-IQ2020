@@ -18,6 +18,11 @@
   };
   var AUDIO_SOURCES = ["iPOD", "TV", "Aux", "Bluetooth"];
 
+  // Inline SVG instead of the Unicode power glyph (U+23FB) - that codepoint
+  // isn't in every mobile font's emoji set and was rendering as a "tofu"
+  // box, so this guarantees the icon looks the same everywhere.
+  var POWER_ICON = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="12"></line><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path></svg>';
+
   // Fixed presets from the manual's "MOODS" section on the Lights screen.
   // "Magenta"/"Aqua" in the manual map to our closest available options
   // (Violet/Cyan) since those are the exact colors the component supports.
@@ -213,7 +218,6 @@
   }
 
   function renderTemp() {
-    q("temp-current").textContent = state.currentTempF != null ? ("Current: " + Math.round(state.currentTempF) + "°F") : "";
     q("temp-target").textContent = state.targetTempF != null ? Math.round(state.targetTempF) : "--";
     q("temp-down").disabled = state.targetTempF == null || state.targetTempF <= MIN_F;
     q("temp-up").disabled = state.targetTempF == null || state.targetTempF >= MAX_F;
@@ -404,16 +408,15 @@
   }
 
   // ---- Screen switching ----
-  // The left icon sidebar (Power/Clean Cycle/Settings) is persistent
-  // across every screen, matching the physical remote - it's rendered
-  // once, outside the swappable content panels below. Each content panel
-  // has its own small Home icon to jump back to the main temperature/
-  // features view.
+  // The left icon sidebar (Power/Clean Cycle/Settings) only shows on the
+  // Home screen, matching the physical remote - every other screen shows
+  // just its own content plus a Home icon to jump back.
 
   function showScreen(name) {
     ["home", "temp", "jets", "lights", "lights-zones", "music", "music-detail", "clean", "settings"].forEach(function (n) {
       q("screen-" + n).classList.toggle("active", n === name);
     });
+    q("app-sidebar").classList.toggle("hidden", name !== "home");
   }
 
   function screenHeaderHtml(title) {
@@ -498,12 +501,11 @@
     var app = document.createElement("div");
     app.id = "app";
     app.innerHTML =
-      // Persistent sidebar - present on every screen, matching the real
-      // remote (confirmed by it still being visible, dimmed, behind the
-      // Clean Cycle panel in the manual). Memory isn't included since
-      // there's no backing "last active settings" data to restore.
-      '<div class="app-sidebar">' +
-        '<button class="icon-tile sidebar-tile" id="global-power-btn" title="All off, or jets+lights on if off"><span class="glyph">⏻</span></button>' +
+      // Sidebar only shows on the Home screen, matching the real remote.
+      // Memory isn't included since there's no backing "last active
+      // settings" data to restore.
+      '<div class="app-sidebar" id="app-sidebar">' +
+        '<button class="icon-tile sidebar-tile" id="global-power-btn" title="All off, or jets+lights on if off"><span class="glyph">' + POWER_ICON + '</span></button>' +
         '<button class="icon-tile sidebar-tile" data-goto="clean"><span class="glyph">🧼</span></button>' +
         '<button class="icon-tile sidebar-tile" data-goto="settings"><span class="glyph">⚙️</span></button>' +
       '</div>' +
@@ -528,7 +530,6 @@
       '<div class="screen" id="screen-temp">' +
         screenHeaderHtml("Set Temperature") +
         '<div class="temp-screen-body">' +
-          '<div class="current" id="temp-current"></div>' +
           '<div class="temp-adjust">' +
             '<div class="target"><span id="temp-target">--</span>°F</div>' +
             '<div class="step-buttons">' +
@@ -536,7 +537,6 @@
               '<button class="step-btn" id="temp-down">▼</button>' +
             '</div>' +
           '</div>' +
-          '<div class="range-note">Range: ' + MIN_F + '°F to ' + MAX_F + '°F</div>' +
         '</div>' +
       '</div>' +
 
@@ -558,7 +558,7 @@
           '</div>' +
         '</div>' +
         '<div class="jets-master-row">' +
-          '<button class="master-btn" id="jets-master" title="All jets off, or all on if off">⏻</button>' +
+          '<button class="master-btn" id="jets-master" title="All jets off, or all on if off">' + POWER_ICON + '</button>' +
         '</div>' +
       '</div>' +
 
@@ -573,7 +573,7 @@
             '<div class="icon-section-label">All Lights</div>' +
             '<div class="all-lights-top-row">' +
               barAdjusterHtml("alllights", 5) +
-              '<button class="master-btn" id="alllights-power">⏻</button>' +
+              '<button class="master-btn" id="alllights-power">' + POWER_ICON + '</button>' +
             '</div>' +
             '<div class="swatch-grid">' + colorSwatchesHtml("all") + '</div>' +
             '<div class="icon-section-label">Cycle Speed</div>' +
@@ -614,7 +614,7 @@
         screenHeaderHtml("Music") +
         '<div class="music-power-row">' +
           '<span class="music-status" id="music-status">OFF</span>' +
-          '<button class="master-btn" id="music-power-btn">⏻</button>' +
+          '<button class="master-btn" id="music-power-btn">' + POWER_ICON + '</button>' +
         '</div>' +
         '<div class="music-body" id="music-body">' +
           '<div class="now-playing" id="now-playing"></div>' +
