@@ -341,11 +341,48 @@ html, body {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   padding-bottom: 16px;
   border-bottom: 1px solid rgba(255,255,255,0.15);
 }
-.all-lights-row .swatch-row { margin-bottom: 0; }
+.all-lights-row .swatch-row { margin-bottom: 0; flex: 1; flex-wrap: nowrap; }
+#alllights-power.on { background: #1f9d55; }
+
+.advance-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+/* Lights: Zones screen - pick a zone on the left, shared color/intensity
+   editor on the right, instead of repeating full controls per zone. */
+.zone-picker {
+  display: flex;
+  gap: 24px;
+}
+.zone-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 140px;
+  flex-shrink: 0;
+}
+.zone-btn {
+  padding: 14px 10px;
+  border-radius: 10px;
+  border: 1px solid #1e4a67;
+  background: #123249;
+  color: #eaf2f6;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+.zone-btn.selected {
+  background: var(--accent, #1f6fa8);
+  border-color: var(--accent, #2a80b8);
+}
+.zone-editor { flex: 1; }
+.zone-editor .swatch-row { margin-bottom: 24px; }
 
 /* Color swatches (lights) */
 .swatch-row {

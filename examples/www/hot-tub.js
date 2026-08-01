@@ -8,7 +8,7 @@
     { key: "underwater", label: "Underwater", colorId: "color_underwater", intensityId: "intensity_underwater" },
     { key: "bartop", label: "Bartop", colorId: "color_bartop", intensityId: "intensity_bartop" },
     { key: "pillow", label: "Pillow", colorId: "color_pillow", intensityId: "intensity_pillow" },
-    { key: "exterior", label: "Exterior", colorId: "color_exterior", intensityId: "intensity_exterior" }
+    { key: "exterior", label: "Water Feature", colorId: "color_exterior", intensityId: "intensity_exterior" }
   ];
   var COLORS = ["Violet", "Blue", "Cyan", "Green", "White", "Yellow", "Red", "Cycle"];
   var COLOR_SWATCH = {
@@ -41,6 +41,7 @@
 
     lightsCycleSpeed: null,
     zones: {}, // key -> { color, intensity }
+    selectedLightZone: "underwater",
 
     audioPower: false,
     audioSource: null,
@@ -110,6 +111,80 @@
     apiGet("/text/artist_name").then(function (d) { state.artistName = (d && d.value) || ""; renderMusic(); });
   }
 
+  // ---- Live updates ----
+  // ESPHome's web_server pushes state changes over Server-Sent Events at
+  // /events the instant it knows about them (this is what the stock
+  // dashboard uses for its own live updates) - using it here means the
+  // page reflects a change as soon as the ESP32 hears back from the tub,
+  // instead of waiting for our own next poll. refresh() above is kept as
+  // a slow periodic safety net in case an event is ever missed.
+
+  function boolFromValue(d) {
+    if (!d) return false;
+    if (typeof d.value === "boolean") return d.value;
+    return d.state === "ON";
+  }
+
+  function applyStateEvent(raw) {
+    var d;
+    try { d = JSON.parse(raw); } catch (e) { return; }
+    if (!d || !d.id) return;
+    var dash = d.id.indexOf("-");
+    if (dash < 0) return;
+    var domain = d.id.slice(0, dash);
+    var objectId = d.id.slice(dash + 1);
+
+    if (domain === "sensor") {
+      if (objectId === "current_temperature" && typeof d.value === "number") { state.currentTempF = d.value; renderHome(); renderTemp(); }
+      else if (objectId === "target_temperature" && typeof d.value === "number") { state.targetTempF = d.value; renderHome(); renderTemp(); }
+      return;
+    }
+    if (domain === "switch") {
+      var boolVal = boolFromValue(d);
+      if (objectId === "lights") { state.lights = boolVal; renderLights(); renderHome(); }
+      else if (objectId === "spa_lock") { state.spaLock = boolVal; renderSettings(); renderHome(); }
+      else if (objectId === "temperature_lock") { state.tempLock = boolVal; renderSettings(); renderHome(); }
+      else if (objectId === "summer_timer") { state.summerTimer = boolVal; renderSettings(); renderHome(); }
+      else if (objectId === "clean_cycle") { state.cleanCycle = boolVal; renderClean(); renderHome(); }
+      else if (objectId === "audio") { state.audioPower = boolVal; renderMusic(); renderHome(); }
+      return;
+    }
+    if (domain === "fan") {
+      if (objectId === "jets_1") { state.jets1 = d.state === "ON"; renderJets(); }
+      else if (objectId === "jets_2") { state.jets2Level = d.speed_level || 0; renderJets(); }
+      return;
+    }
+    if (domain === "select") {
+      if (objectId === "color_cycle_speed") { state.lightsCycleSpeed = d.value; renderLights(); return; }
+      if (objectId === "audio_source") { state.audioSource = d.value; renderMusic(); return; }
+      var zoneC = LIGHT_ZONES.filter(function (z) { return z.colorId === objectId; })[0];
+      if (zoneC) { state.zones[zoneC.key].color = d.value; renderLights(); }
+      return;
+    }
+    if (domain === "number") {
+      if (objectId === "volume") { state.volume = d.value; renderMusic(); return; }
+      if (objectId === "treble") { state.treble = d.value; renderMusic(); return; }
+      if (objectId === "bass") { state.bass = d.value; renderMusic(); return; }
+      if (objectId === "balance") { state.balance = d.value; renderMusic(); return; }
+      if (objectId === "subwoofer") { state.subwoofer = d.value; renderMusic(); return; }
+      var zoneN = LIGHT_ZONES.filter(function (z) { return z.intensityId === objectId; })[0];
+      if (zoneN) { state.zones[zoneN.key].intensity = d.value; renderLights(); }
+      return;
+    }
+    if (domain === "text") {
+      if (objectId === "song_title") { state.songTitle = d.value || ""; renderMusic(); }
+      else if (objectId === "artist_name") { state.artistName = d.value || ""; renderMusic(); }
+    }
+  }
+
+  function connectLiveUpdates() {
+    if (typeof EventSource === "undefined") return; // fall back to polling only
+    var source = new EventSource("/events");
+    source.addEventListener("state", function (e) { applyStateEvent(e.data); });
+    source.addEventListener("state_detail_all", function (e) { applyStateEvent(e.data); });
+    // EventSource reconnects on its own after a drop - nothing else needed here.
+  }
+
   // ---- Rendering ----
 
   function q(id) { return document.getElementById(id); }
@@ -145,21 +220,28 @@
   }
 
   function renderLights() {
-    setSwitchEl("lights-switch", state.lights);
-    LIGHT_ZONES.forEach(function (z) {
-      var zoneState = state.zones[z.key];
-      var group = q("zone-" + z.key);
-      if (!group) return;
-      group.querySelectorAll(".color-swatch").forEach(function (el) {
-        el.classList.toggle("selected", el.getAttribute("data-color") === zoneState.color);
-      });
-      var intensityEl = q("intensity-" + z.key);
-      if (intensityEl) intensityEl.textContent = zoneState.intensity != null ? zoneState.intensity : "--";
-    });
+    q("alllights-power").classList.toggle("on", state.lights);
     ["Off", "Slow", "Normal", "Fast"].forEach(function (speed) {
       var el = q("cyclespeed-" + speed);
       if (el) el.classList.toggle("on", state.lightsCycleSpeed === speed);
     });
+    renderLightsZones();
+  }
+
+  function renderLightsZones() {
+    LIGHT_ZONES.forEach(function (z) {
+      var btn = q("zonebtn-" + z.key);
+      if (btn) btn.classList.toggle("selected", state.selectedLightZone === z.key);
+    });
+    var zs = state.zones[state.selectedLightZone] || {};
+    var editor = q("zone-editor-swatches");
+    if (editor) {
+      editor.querySelectorAll(".color-swatch").forEach(function (el) {
+        el.classList.toggle("selected", el.getAttribute("data-color") === zs.color);
+      });
+    }
+    var valueEl = q("zone-editor-value");
+    if (valueEl) valueEl.textContent = zs.intensity != null ? zs.intensity : "--";
   }
 
   function renderSettings() {
@@ -275,7 +357,7 @@
   // tab bar.
 
   function showScreen(name) {
-    ["home", "temp", "jets", "lights", "music", "clean", "settings"].forEach(function (n) {
+    ["home", "temp", "jets", "lights", "lights-zones", "music", "clean", "settings"].forEach(function (n) {
       q("screen-" + n).classList.toggle("active", n === name);
     });
   }
@@ -295,21 +377,6 @@
       var style = c === "Cycle" ? ("background:" + bg + ";") : ("background-color:" + bg + ";");
       return '<div class="color-swatch" data-zone="' + zoneKey + '" data-color="' + c + '" style="' + style + '" title="' + c + '"></div>';
     }).join("");
-  }
-
-  function lightZoneHtml(zone) {
-    return (
-      '<div class="jet-group" id="zone-' + zone.key + '">' +
-        '<div class="name">' + zone.label + '</div>' +
-        '<div class="swatch-row">' + colorSwatchesHtml(zone.key) + '</div>' +
-        '<div class="stepper-row">' +
-          '<span class="stepper-label">Intensity</span>' +
-          '<button class="mini-btn" data-intensity-down="' + zone.key + '">−</button>' +
-          '<span class="stepper-value" id="intensity-' + zone.key + '">--</span>' +
-          '<button class="mini-btn" data-intensity-up="' + zone.key + '">+</button>' +
-        '</div>' +
-      '</div>'
-    );
   }
 
   function numberRowHtml(id, label, min, max) {
@@ -406,25 +473,45 @@
 
       '<div class="screen" id="screen-lights">' +
         screenHeaderHtml("Lights") +
-        '<div class="toggle-row"><span class="name">All Lights</span><div class="switch" id="lights-switch"><div class="knob"></div></div></div>' +
-        '<div class="stepper-label" style="margin: 12px 0 8px;">Moods</div>' +
-        '<div class="moods-row">' +
-          MOODS.map(function (m, i) { return '<button class="mood-btn" data-mood="' + i + '">' + (i + 1) + '</button>'; }).join("") +
-        '</div>' +
-        '<div class="stepper-label" style="margin-bottom: 8px;">All Lights - Color &amp; Brightness</div>' +
         '<div class="all-lights-row">' +
+          '<button class="mini-btn" id="alllights-power">⏻</button>' +
           '<div class="swatch-row">' + colorSwatchesHtml("all") + '</div>' +
           '<button class="mini-btn" id="all-intensity-down">−</button>' +
           '<button class="mini-btn" id="all-intensity-up">+</button>' +
         '</div>' +
-        LIGHT_ZONES.map(lightZoneHtml).join("") +
-        '<div class="jet-group">' +
-          '<div class="name">Cycle Speed</div>' +
-          '<div class="speed-buttons">' +
-            '<button class="speed-btn" id="cyclespeed-Off">Off</button>' +
-            '<button class="speed-btn" id="cyclespeed-Slow">Slow</button>' +
-            '<button class="speed-btn" id="cyclespeed-Normal">Normal</button>' +
-            '<button class="speed-btn" id="cyclespeed-Fast">Fast</button>' +
+        '<div class="icon-section-label">Moods</div>' +
+        '<div class="moods-row">' +
+          MOODS.map(function (m, i) { return '<button class="mood-btn" data-mood="' + i + '">' + (i + 1) + '</button>'; }).join("") +
+        '</div>' +
+        '<div class="icon-section-label">Cycle Speed</div>' +
+        '<div class="speed-buttons">' +
+          '<button class="speed-btn" id="cyclespeed-Off">Off</button>' +
+          '<button class="speed-btn" id="cyclespeed-Slow">Slow</button>' +
+          '<button class="speed-btn" id="cyclespeed-Normal">Normal</button>' +
+          '<button class="speed-btn" id="cyclespeed-Fast">Fast</button>' +
+        '</div>' +
+        '<div class="advance-row">' +
+          '<button class="master-btn" data-goto="lights-zones">▶</button>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="screen" id="screen-lights-zones">' +
+        '<div class="screen-header">' +
+          '<div class="home-btn" data-goto="lights">◀</div>' +
+          '<div class="header-title">Lights: Zones</div>' +
+        '</div>' +
+        '<div class="zone-picker">' +
+          '<div class="zone-list">' +
+            LIGHT_ZONES.map(function (z) { return '<button class="zone-btn" id="zonebtn-' + z.key + '" data-zone-select="' + z.key + '">' + z.label + '</button>'; }).join("") +
+          '</div>' +
+          '<div class="zone-editor">' +
+            '<div class="swatch-row" id="zone-editor-swatches">' + colorSwatchesHtml("selected") + '</div>' +
+            '<div class="stepper-row wide">' +
+              '<span class="stepper-label">Intensity</span>' +
+              '<button class="mini-btn" id="zone-editor-down">−</button>' +
+              '<span class="stepper-value" id="zone-editor-value">--</span>' +
+              '<button class="mini-btn" id="zone-editor-up">+</button>' +
+            '</div>' +
           '</div>' +
         '</div>' +
       '</div>' +
@@ -479,8 +566,8 @@
       if (state.targetTempF != null) setTargetTempF(state.targetTempF - 1);
     });
 
-    // Lights - master switch
-    q("lights-switch").addEventListener("click", function () {
+    // Lights - All Lights power icon
+    q("alllights-power").addEventListener("click", function () {
       toggleSwitch("lights", state.lights);
     });
 
@@ -497,35 +584,39 @@
       LIGHT_ZONES.forEach(function (z) { stepNumber(z.intensityId, state.zones[z.key].intensity, 1, 0, 5); });
     });
 
-    // Lights - per-zone (and "all") color + intensity
-    document.querySelectorAll(".color-swatch").forEach(function (el) {
-      el.addEventListener("click", function () {
-        var zoneKey = el.getAttribute("data-zone");
-        var color = el.getAttribute("data-color");
-        if (zoneKey === "all") {
-          LIGHT_ZONES.forEach(function (z) { setSelect(z.colorId, color); });
-          return;
-        }
-        var zone = LIGHT_ZONES.filter(function (z) { return z.key === zoneKey; })[0];
-        if (zone) setSelect(zone.colorId, color);
-      });
-    });
-    document.querySelectorAll("[data-intensity-down]").forEach(function (el) {
-      el.addEventListener("click", function () {
-        var zoneKey = el.getAttribute("data-intensity-down");
-        var zone = LIGHT_ZONES.filter(function (z) { return z.key === zoneKey; })[0];
-        stepNumber(zone.intensityId, state.zones[zoneKey].intensity, -1, 0, 5);
-      });
-    });
-    document.querySelectorAll("[data-intensity-up]").forEach(function (el) {
-      el.addEventListener("click", function () {
-        var zoneKey = el.getAttribute("data-intensity-up");
-        var zone = LIGHT_ZONES.filter(function (z) { return z.key === zoneKey; })[0];
-        stepNumber(zone.intensityId, state.zones[zoneKey].intensity, 1, 0, 5);
-      });
-    });
     ["Off", "Slow", "Normal", "Fast"].forEach(function (speed) {
       q("cyclespeed-" + speed).addEventListener("click", function () { setSelect("color_cycle_speed", speed); });
+    });
+
+    // Lights: Zones screen - pick a zone, then color/intensity apply to it
+    document.querySelectorAll("[data-zone-select]").forEach(function (el) {
+      el.addEventListener("click", function () {
+        state.selectedLightZone = el.getAttribute("data-zone-select");
+        renderLightsZones();
+      });
+    });
+    q("zone-editor-down").addEventListener("click", function () {
+      var zone = state.selectedLightZone;
+      stepNumber(LIGHT_ZONES.filter(function (z) { return z.key === zone; })[0].intensityId, state.zones[zone].intensity, -1, 0, 5);
+    });
+    q("zone-editor-up").addEventListener("click", function () {
+      var zone = state.selectedLightZone;
+      stepNumber(LIGHT_ZONES.filter(function (z) { return z.key === zone; })[0].intensityId, state.zones[zone].intensity, 1, 0, 5);
+    });
+
+    // Color swatches: "all" (All Lights row) applies to every zone, "selected"
+    // (Zones screen editor) applies to whichever zone is currently picked.
+    document.querySelectorAll(".color-swatch").forEach(function (el) {
+      el.addEventListener("click", function () {
+        var target = el.getAttribute("data-zone");
+        var color = el.getAttribute("data-color");
+        if (target === "all") {
+          LIGHT_ZONES.forEach(function (z) { setSelect(z.colorId, color); });
+        } else if (target === "selected") {
+          var zone = LIGHT_ZONES.filter(function (z) { return z.key === state.selectedLightZone; })[0];
+          if (zone) setSelect(zone.colorId, color);
+        }
+      });
     });
 
     // Settings toggles
@@ -568,6 +659,9 @@
   document.addEventListener("DOMContentLoaded", function () {
     buildPage();
     refresh();
-    setInterval(refresh, 3000);
+    connectLiveUpdates();
+    // Slow safety-net poll in case an SSE event is ever missed - live
+    // updates above handle the normal instant-feedback case.
+    setInterval(refresh, 15000);
   });
 })();
