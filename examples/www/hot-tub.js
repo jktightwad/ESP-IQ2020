@@ -27,7 +27,7 @@
     summerTimer: false,
     cleanCycle: false,
     jets1: false,
-    jets2Level: 0, // 0 = off, 1 = medium, 2 = full
+    jets2Level: 0, // 0 = off, 1 = low, 2 = high
 
     lightsCycleSpeed: null,
     zones: {}, // key -> { color, intensity }
@@ -173,8 +173,9 @@
   }
 
   function renderJets() {
-    setSwitchEl("jets1-switch", state.jets1);
-    ["jets2-off", "jets2-med", "jets2-full"].forEach(function (id, idx) {
+    q("jets1-off").classList.toggle("on", !state.jets1);
+    q("jets1-on").classList.toggle("on", state.jets1);
+    ["jets2-off", "jets2-low", "jets2-high"].forEach(function (id, idx) {
       q(id).classList.toggle("on", state.jets2Level === idx);
     });
   }
@@ -215,10 +216,6 @@
     apiPost("/switch/" + objectId + "/" + (current ? "turn_off" : "turn_on"));
   }
 
-  function toggleFan(objectId, current) {
-    apiPost("/fan/" + objectId + "/" + (current ? "turn_off" : "turn_on"));
-  }
-
   function setJets2(level) {
     if (level === 0) {
       apiPost("/fan/jets_2/turn_off");
@@ -236,15 +233,25 @@
     apiPost("/number/" + objectId + "/set", { value: v });
   }
 
-  // ---- Tab switching ----
+  // ---- Screen switching ----
+  // Matches the physical remote's navigation model: the Home screen is an
+  // icon-based launcher, and every other screen is full-screen for that
+  // one feature with a Home icon (top-left) to go back - no persistent
+  // tab bar.
 
-  function showTab(name) {
+  function showScreen(name) {
     ["home", "temp", "jets", "lights", "music", "clean", "settings"].forEach(function (n) {
       q("screen-" + n).classList.toggle("active", n === name);
     });
-    document.querySelectorAll(".tab").forEach(function (el) {
-      el.classList.toggle("active", el.getAttribute("data-tab") === name);
-    });
+  }
+
+  function screenHeaderHtml(title) {
+    return (
+      '<div class="screen-header">' +
+        '<div class="home-btn" data-goto="home">🏠</div>' +
+        '<div class="header-title">' + title + '</div>' +
+      '</div>'
+    );
   }
 
   function colorSwatchesHtml(zoneKey) {
@@ -311,18 +318,24 @@
             '<span class="value"><span id="home-temp-value">--</span><span class="unit">°F</span></span>' +
             '<span class="label" id="home-target-value"></span>' +
           '</div>' +
-          '<div class="icon-grid">' +
-            '<div class="icon-tile" data-goto="jets"><span class="glyph">🌀</span><span class="name">Jets</span></div>' +
-            '<div class="icon-tile" id="tile-lights" data-goto="lights"><span class="glyph">💡</span><span class="name">Lights</span></div>' +
-            '<div class="icon-tile" id="tile-music" data-goto="music"><span class="glyph">🎵</span><span class="name">Music</span></div>' +
-            '<div class="icon-tile" id="tile-clean" data-goto="clean"><span class="glyph">🧼</span><span class="name">Clean Cycle</span></div>' +
-            '<div class="icon-tile" data-goto="settings"><span class="glyph">⚙️</span><span class="name">Settings</span></div>' +
+          '<div class="icon-col">' +
+            '<div class="icon-section-label">Functions</div>' +
+            '<div class="icon-row">' +
+              '<div class="icon-tile" id="tile-clean" data-goto="clean"><span class="glyph">🧼</span><span class="name">Clean Cycle</span></div>' +
+              '<div class="icon-tile" data-goto="settings"><span class="glyph">⚙️</span><span class="name">Settings</span></div>' +
+            '</div>' +
+            '<div class="icon-section-label">Features</div>' +
+            '<div class="icon-row">' +
+              '<div class="icon-tile" data-goto="jets"><span class="glyph">🌀</span><span class="name">Jets</span></div>' +
+              '<div class="icon-tile" id="tile-lights" data-goto="lights"><span class="glyph">💡</span><span class="name">Lights</span></div>' +
+              '<div class="icon-tile" id="tile-music" data-goto="music"><span class="glyph">🎵</span><span class="name">Music</span></div>' +
+            '</div>' +
           '</div>' +
         '</div>' +
       '</div>' +
 
       '<div class="screen" id="screen-temp">' +
-        '<div class="title">Set Temperature</div>' +
+        screenHeaderHtml("Set Temperature") +
         '<div class="temp-adjust">' +
           '<div class="current" id="temp-current"></div>' +
           '<div class="target"><span id="temp-target">--</span>°F</div>' +
@@ -335,23 +348,26 @@
       '</div>' +
 
       '<div class="screen" id="screen-jets">' +
-        '<div class="title">Jets</div>' +
+        screenHeaderHtml("Jets") +
         '<div class="jet-group">' +
           '<div class="name">Jets 1</div>' +
-          '<div class="toggle-row"><span class="name">On / Off</span><div class="switch" id="jets1-switch"><div class="knob"></div></div></div>' +
+          '<div class="speed-buttons">' +
+            '<button class="speed-btn" id="jets1-off">Off</button>' +
+            '<button class="speed-btn" id="jets1-on">On</button>' +
+          '</div>' +
         '</div>' +
         '<div class="jet-group">' +
           '<div class="name">Jets 2</div>' +
           '<div class="speed-buttons">' +
             '<button class="speed-btn" id="jets2-off">Off</button>' +
-            '<button class="speed-btn" id="jets2-med">Medium</button>' +
-            '<button class="speed-btn" id="jets2-full">Full</button>' +
+            '<button class="speed-btn" id="jets2-low">Low</button>' +
+            '<button class="speed-btn" id="jets2-high">High</button>' +
           '</div>' +
         '</div>' +
       '</div>' +
 
       '<div class="screen" id="screen-lights">' +
-        '<div class="title">Lights</div>' +
+        screenHeaderHtml("Lights") +
         '<div class="toggle-row"><span class="name">All Lights</span><div class="switch" id="lights-switch"><div class="knob"></div></div></div>' +
         LIGHT_ZONES.map(lightZoneHtml).join("") +
         '<div class="jet-group">' +
@@ -366,7 +382,7 @@
       '</div>' +
 
       '<div class="screen" id="screen-music">' +
-        '<div class="title">Music</div>' +
+        screenHeaderHtml("Music") +
         '<div class="toggle-row"><span class="name">Power</span><div class="switch" id="audio-switch"><div class="knob"></div></div></div>' +
         '<div class="jet-group">' +
           '<div class="name">Source</div>' +
@@ -384,7 +400,7 @@
       '</div>' +
 
       '<div class="screen" id="screen-clean">' +
-        '<div class="title">Clean Cycle</div>' +
+        screenHeaderHtml("Clean Cycle") +
         '<div class="clean-panel">' +
           '<div class="status" id="clean-status"></div>' +
           '<button class="start-btn" id="clean-start-btn">Start</button>' +
@@ -392,19 +408,10 @@
       '</div>' +
 
       '<div class="screen" id="screen-settings">' +
-        '<div class="title">Settings</div>' +
+        screenHeaderHtml("Settings") +
         '<div class="toggle-row"><span class="name">Temperature Lock</span><div class="switch" id="templock-switch"><div class="knob"></div></div></div>' +
         '<div class="toggle-row"><span class="name">Spa Lock</span><div class="switch" id="spalock-switch"><div class="knob"></div></div></div>' +
         '<div class="toggle-row"><span class="name">Summer Timer</span><div class="switch" id="summer-switch"><div class="knob"></div></div></div>' +
-      '</div>' +
-
-      '<div class="tabbar">' +
-        '<div class="tab active" data-tab="home"><span class="glyph">🏠</span><span class="label">Home</span></div>' +
-        '<div class="tab" data-tab="jets"><span class="glyph">🌀</span><span class="label">Jets</span></div>' +
-        '<div class="tab" data-tab="lights"><span class="glyph">💡</span><span class="label">Lights</span></div>' +
-        '<div class="tab" data-tab="music"><span class="glyph">🎵</span><span class="label">Music</span></div>' +
-        '<div class="tab" data-tab="clean"><span class="glyph">🧼</span><span class="label">Clean</span></div>' +
-        '<div class="tab" data-tab="settings"><span class="glyph">⚙️</span><span class="label">Settings</span></div>' +
       '</div>';
 
     document.body.innerHTML = "";
@@ -412,12 +419,9 @@
 
     // Navigation
     document.querySelectorAll("[data-goto]").forEach(function (el) {
-      el.addEventListener("click", function () { showTab(el.getAttribute("data-goto")); });
+      el.addEventListener("click", function () { showScreen(el.getAttribute("data-goto")); });
     });
-    document.querySelectorAll(".tab").forEach(function (el) {
-      el.addEventListener("click", function () { showTab(el.getAttribute("data-tab")); });
-    });
-    q("home-dial").addEventListener("click", function () { showTab("temp"); });
+    q("home-dial").addEventListener("click", function () { showScreen("temp"); });
 
     // Temperature controls
     q("temp-up").addEventListener("click", function () {
@@ -465,10 +469,11 @@
     q("summer-switch").addEventListener("click", function () { toggleSwitch("summer_timer", state.summerTimer); });
 
     // Jets
-    q("jets1-switch").addEventListener("click", function () { toggleFan("jets_1", state.jets1); });
+    q("jets1-off").addEventListener("click", function () { apiPost("/fan/jets_1/turn_off"); });
+    q("jets1-on").addEventListener("click", function () { apiPost("/fan/jets_1/turn_on"); });
     q("jets2-off").addEventListener("click", function () { setJets2(0); });
-    q("jets2-med").addEventListener("click", function () { setJets2(1); });
-    q("jets2-full").addEventListener("click", function () { setJets2(2); });
+    q("jets2-low").addEventListener("click", function () { setJets2(1); });
+    q("jets2-high").addEventListener("click", function () { setJets2(2); });
 
     // Clean cycle
     q("clean-start-btn").addEventListener("click", function () {
