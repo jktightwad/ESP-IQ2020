@@ -224,7 +224,7 @@
   function q(id) { return document.getElementById(id); }
 
   function renderHome() {
-    q("home-temp-value").textContent = state.targetTempF != null ? Math.round(state.targetTempF) : "--";
+    q("home-temp-value").textContent = state.currentTempF != null ? Math.round(state.currentTempF) : "--";
     setBadge("badge-summer", state.summerTimer);
     setBadge("badge-lock", state.spaLock || state.tempLock);
     setTile("tile-lights", state.lights);
@@ -736,11 +736,11 @@
           '<div class="icon-section-label">Volume</div>' +
           barAdjusterHtml("volume", 10) +
           '<div class="icon-section-label">Source</div>' +
-          '<button class="source-select" id="source-select-btn">' +
-            '<span id="source-select-label">--</span>' +
-            ARROW_RIGHT_ICON +
-          '</button>' +
-          '<div class="advance-row">' +
+          '<div class="source-row">' +
+            '<button class="source-select" id="source-select-btn">' +
+              '<span id="source-select-label">--</span>' +
+              ARROW_RIGHT_ICON +
+            '</button>' +
             '<button class="master-btn nav-btn" data-goto="music-detail">' + ARROW_RIGHT_ICON + '</button>' +
           '</div>' +
         '</div>' +

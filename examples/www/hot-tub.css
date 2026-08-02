@@ -868,11 +868,20 @@ body {
 }
 
 /* Source "current value" row - tap to open the popout above. */
+/* Source sits beside the forward arrow on the same line (narrower than
+   the Volume bar above it), not full-width with the arrow on its own
+   row below - matches the reference exactly. */
+.source-row {
+  display: flex;
+  align-items: center;
+  gap: 3cqw;
+}
 .source-select {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   padding: 2.6cqh 3cqw;
   border: none;
   border-radius: 1.2cqh;
