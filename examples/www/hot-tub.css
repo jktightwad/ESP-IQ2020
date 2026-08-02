@@ -344,9 +344,7 @@ body {
   align-items: center;
   gap: 2cqw;
   padding: 2.5cqh 0;
-  border-bottom: 1px solid #1e4a67;
 }
-.setting-group .setting-row:last-child { border-bottom: none; }
 .setting-label {
   font-size: 3.6cqh;
   color: #cfe8f7;
@@ -357,7 +355,7 @@ body {
   color: #9cd0ec;
 }
 .setting-row .speed-buttons { flex: none; gap: 1.2cqw; }
-.setting-row .speed-btn { flex: none; padding: 1.8cqh 3.5cqw; font-size: 3.2cqh; }
+.setting-row .speed-btn { flex: none; padding: 3.6cqh 3.5cqw; font-size: 6.4cqh; }
 
 /* Chevron/segmented-bar and chevron/number adjusters, used for brightness,
    volume, and Bass/Treble/Balance/Subwoofer - matches the manual's
