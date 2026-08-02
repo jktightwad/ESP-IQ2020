@@ -72,10 +72,19 @@ body {
    computed to exactly fill the column's height edge-to-edge: each tile's
    height is (100% minus the 3 gaps and top/bottom padding) / 4, instead
    of guessing a width and hoping leftover space distributes evenly. */
+/* Explicit 1/4-of-the-screen width (matching the reference, where the
+   popout covers the remaining 3/4) instead of letting width be an
+   incidental side effect of the square tiles' own height/4 formula -
+   that math alone was only landing around 1/8 of the total width, far
+   narrower than intended, which is also why the Home popout (100% of
+   the remaining space) was covering more of the screen than it should. */
 .app-sidebar {
   position: relative;
+  width: 25cqw;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 1.2cqh;
   padding: 0.8cqh;
   flex-shrink: 0;
@@ -966,18 +975,18 @@ body {
   padding: 4cqh 8cqw;
 }
 .home-popout.open { right: 0; }
-/* Shared by both popouts and anchored to the sidebar itself, not to
-   either popout - .app-content/.screen both clip horizontal overflow
-   (needed elsewhere to stop layout bugs from leaking into a page
-   scrollbar), so an arrow anchored to a popout and poking left past the
-   screen's own edge was silently clipped and invisible. .app-sidebar has
-   no such clipping, so bleeding this to the right off *its* edge is what
-   actually renders. Only shown while a popout is open. */
+/* Belongs to the popout itself (each one has its own), positioned at the
+   popout's own left edge - not a negative offset bleeding past it, since
+   that gets silently clipped by .app-content/.screen's overflow:hidden
+   (needed elsewhere to stop a different layout bug from leaking into a
+   page scrollbar). Sitting flush at this edge still lands it right at
+   the sidebar/content seam, since the sidebar is a true 1/4 of the
+   width and this popout is exactly the remaining 3/4. */
 .home-popout-collapse {
   display: none;
   position: absolute;
   top: 50%;
-  right: -6cqh;
+  left: 0.5cqh;
   transform: translateY(-50%);
   width: 6cqh;
   height: 10cqh;
@@ -990,7 +999,7 @@ body {
   justify-content: center;
   cursor: pointer;
 }
-.app-sidebar.popout-open .home-popout-collapse { display: flex; }
+.home-popout.open .home-popout-collapse { display: flex; }
 .home-popout-title {
   font-style: italic;
   text-transform: uppercase;
