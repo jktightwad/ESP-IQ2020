@@ -332,16 +332,8 @@
 
   function renderClean() {
     var btn = q("clean-start-btn");
-    var status = q("clean-status");
-    if (state.cleanCycle) {
-      btn.classList.add("active");
-      btn.textContent = "Running";
-      status.textContent = "Clean Cycle is active (runs for about 10 minutes)";
-    } else {
-      btn.classList.remove("active");
-      btn.textContent = "Start";
-      status.textContent = "";
-    }
+    btn.classList.toggle("active", state.cleanCycle);
+    btn.textContent = state.cleanCycle ? "Running" : "Start";
   }
 
   function renderJets() {
@@ -521,18 +513,9 @@
 
   function renderMemory() {
     var raw = localStorage.getItem(MEMORY_KEY);
-    var status = q("memory-status");
     var restoreBtn = q("memory-restore-btn");
-    if (!status || !restoreBtn) return;
-    if (raw) {
-      var savedAt;
-      try { savedAt = JSON.parse(raw).savedAt; } catch (e) {}
-      status.textContent = savedAt ? ("Saved " + new Date(savedAt).toLocaleString()) : "Settings saved";
-      restoreBtn.disabled = false;
-    } else {
-      status.textContent = "No saved settings yet";
-      restoreBtn.disabled = true;
-    }
+    if (!restoreBtn) return;
+    restoreBtn.disabled = !raw;
   }
 
   // ---- Screen switching ----
@@ -663,17 +646,15 @@
           '</div>' +
         '</div>' +
         '<div class="home-popout" id="memory-popout">' +
-          '<button class="master-btn nav-btn home-popout-collapse" data-close-popout="memory-popout">' + ARROW_LEFT_ICON + '</button>' +
+          '<button class="home-popout-collapse" data-close-popout="memory-popout">◀</button>' +
           '<div class="home-popout-title">Memory:</div>' +
-          '<div class="home-popout-status" id="memory-status"></div>' +
-          '<button class="home-popout-btn" id="memory-restore-btn">Restore</button>' +
-          '<button class="home-popout-btn" id="memory-save-btn">Save</button>' +
+          '<button class="home-popout-btn" id="memory-restore-btn" title="Restore the last saved settings">Restore</button>' +
+          '<button class="home-popout-btn" id="memory-save-btn" title="Save the current settings">Save</button>' +
         '</div>' +
         '<div class="home-popout" id="clean-popout">' +
-          '<button class="master-btn nav-btn home-popout-collapse" data-close-popout="clean-popout">' + ARROW_LEFT_ICON + '</button>' +
+          '<button class="home-popout-collapse" data-close-popout="clean-popout">◀</button>' +
           '<div class="home-popout-title">Clean Cycle:</div>' +
           '<button class="home-popout-btn" id="clean-start-btn">Start</button>' +
-          '<div class="home-popout-status" id="clean-status"></div>' +
         '</div>' +
       '</div>' +
 

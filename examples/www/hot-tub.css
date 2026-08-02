@@ -949,24 +949,36 @@ body {
   padding: 4cqh 8cqw;
 }
 .home-popout.open { right: 0; }
+/* Only rendered (and only takes up space / receives clicks) while its
+   popout is open - it used to be positioned here unconditionally, which
+   left it poking into view over the Home screen even when "closed"
+   (right:-100% only moves the popout's own box, not this). Small plain
+   chevron, not the big master-btn/nav-btn treatment - the reference's
+   collapse button is a small subtle square, not a wide bold arrow. */
 .home-popout-collapse {
+  display: none;
   position: absolute;
   top: 50%;
-  left: -7cqh;
+  left: -6cqh;
   transform: translateY(-50%);
+  width: 6cqh;
+  height: 10cqh;
+  border-radius: 15%;
+  border: none;
+  background: #0f2436;
+  color: #fff;
+  font-size: 3.4cqh;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
+.home-popout.open .home-popout-collapse { display: flex; }
 .home-popout-title {
   font-style: italic;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   font-size: 5.5cqh;
   color: #eaf2f6;
-}
-.home-popout-status {
-  font-size: 3cqh;
-  color: #9cd0ec;
-  margin-top: -1.5cqh;
-  min-height: 2.5cqh;
 }
 .home-popout-btn {
   width: 55cqw;
