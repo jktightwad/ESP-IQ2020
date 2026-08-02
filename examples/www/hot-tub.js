@@ -614,7 +614,7 @@
         screenHeaderHtml("Set Temperature") +
         '<div class="temp-screen-body">' +
           '<div class="temp-adjust">' +
-            '<div class="target"><span id="temp-target">--</span>°F</div>' +
+            '<div class="target"><span id="temp-target">--</span><span class="target-unit">°F</span></div>' +
             '<div class="step-buttons">' +
               '<button class="step-btn" id="temp-up">▲</button>' +
               '<button class="step-btn" id="temp-down">▼</button>' +

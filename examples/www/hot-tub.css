@@ -123,6 +123,7 @@ body {
 #screen-jets { --accent: #a855f7; --accent-soft: #3b1064; background: radial-gradient(ellipse at top, #4c1d95, #1e0a3c 75%); }
 #screen-lights, #screen-lights-zones { --accent: #ef4444; --accent-soft: #5c1414; background: radial-gradient(ellipse at top, #7f1d1d, #2a0a0a 75%); }
 #screen-music, #screen-music-detail { --accent: #22c55e; --accent-soft: #14401f; background: radial-gradient(ellipse at top, #14532d, #06210f 75%); }
+#screen-temp { background: radial-gradient(ellipse at top, #2f7fd6, #123249 75%); }
 
 /* Every non-Home screen has this header instead of a persistent tab bar
    - matches the remote's own navigation, where each screen is full-
@@ -134,15 +135,15 @@ body {
   margin-bottom: 2cqh;
 }
 .home-btn {
-  width: 11cqh;
-  height: 11cqh;
+  width: 22cqh;
+  height: 22cqh;
   border-radius: 20%;
   background: #123249;
   border: 1px solid #1e4a67;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 5.5cqh;
+  font-size: 11cqh;
   cursor: pointer;
   flex-shrink: 0;
 }
@@ -293,9 +294,15 @@ body {
   gap: 6cqw;
 }
 .temp-adjust .target {
+  font-family: "Arial Narrow", "Roboto Condensed", "Helvetica Neue", Arial, sans-serif;
+  font-stretch: condensed;
   font-size: 65cqh;
   font-weight: 700;
   line-height: 1;
+}
+.temp-adjust .target-unit {
+  font-size: 20cqh;
+  font-weight: 700;
 }
 .step-buttons {
   display: flex;
@@ -303,7 +310,7 @@ body {
   gap: 3cqh;
 }
 .step-btn {
-  width: 22cqh;
+  width: 44cqh;
   height: 22cqh;
   border-radius: 20%;
   border: none;
