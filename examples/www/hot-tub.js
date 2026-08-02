@@ -402,6 +402,15 @@
     }
   }
 
+  // Home screen's Lights icon - per the manual, pressing it while lights
+  // are off turns them on with all zones set to blue.
+  function lightsTileTap() {
+    if (!state.lights) {
+      toggleSwitch("lights", false);
+      LIGHT_ZONES.forEach(function (z) { setSelect(z.colorId, "Blue"); });
+    }
+  }
+
   function jetsMasterToggle() {
     if (state.jets1 || state.jets2Level > 0) {
       apiPost("/fan/jets_1/turn_off");
@@ -788,6 +797,7 @@
     q("home-dial").addEventListener("click", function () { showScreen("temp"); });
     q("global-power-btn").addEventListener("click", globalPowerToggle);
     q("tile-jets").addEventListener("click", jetsTileTap);
+    q("tile-lights").addEventListener("click", lightsTileTap);
 
     // Temperature controls
     q("temp-up").addEventListener("click", function () {

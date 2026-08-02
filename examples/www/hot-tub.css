@@ -237,18 +237,23 @@ body {
 .temp-tile .value {
   font-family: "Arial Narrow", "Roboto Condensed", "Helvetica Neue", Arial, sans-serif;
   font-stretch: condensed;
-  font-size: 78cqh;
+  font-size: 88cqh;
   font-weight: 700;
   line-height: 1;
   /* The named condensed fonts above aren't guaranteed to exist on every
      device, so font-stretch alone can't be relied on - negative letter-
      spacing pulls the digits together regardless of which font actually
-     renders, and the smaller size keeps "F" from clipping at the edge. */
+     renders. */
   letter-spacing: -0.06em;
 }
 .temp-tile .unit {
   font-size: 24cqh;
   color: #dff2ff;
+  /* .unit inherits .value's negative letter-spacing by default, which
+     was pulling "F" right up against the last digit - reset it and add
+     a bit of breathing room instead. */
+  letter-spacing: normal;
+  margin-left: 0.15em;
 }
 
 /* Feature icons are square, sized to match the temp tile's height above
@@ -507,10 +512,11 @@ body {
    rectangles with a big arrow on the physical remote, unlike the
    circular power buttons that share this same base height/color. */
 .master-btn.nav-btn {
-  width: 45cqh;
+  width: 26cqh;
   border-radius: 20%;
   font-size: 9cqh;
   background: #1a1a1a;
+  border: 2px solid #fff;
 }
 
 .speed-buttons {
@@ -578,9 +584,16 @@ body {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 1.5cqh;
+  margin-bottom: 1cqh;
 }
 .all-lights-header-row .icon-section-label { margin: 0; }
+/* Smaller than the default master-btn (14cqh) - at full size it made
+   this row tall enough to push the swatch grid below it off the screen. */
+#alllights-power {
+  width: 9cqh;
+  height: 9cqh;
+  font-size: 4cqh;
+}
 .all-lights-top-row {
   margin-bottom: 2cqh;
 }
@@ -645,7 +658,7 @@ body {
   border: none;
   background: transparent;
   color: #eaf2f6;
-  font-size: 2.8cqh;
+  font-size: 3.4cqh;
   text-align: left;
   cursor: pointer;
 }
@@ -653,10 +666,12 @@ body {
   color: #fff;
   font-weight: 700;
 }
+/* Same size formula as the Moods buttons, for visual consistency between
+   the two screens' "pick one of 4" controls. */
 .zone-color-preview {
   display: inline-block;
-  width: 7cqh;
-  height: 7cqh;
+  width: calc(((100cqh - 24cqh - (1.2cqh * 3)) / 4) * 0.85);
+  height: calc(((100cqh - 24cqh - (1.2cqh * 3)) / 4) * 0.85);
   border-radius: 6px;
   flex-shrink: 0;
   background: #555;
