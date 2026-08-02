@@ -501,10 +501,11 @@
     q("app-sidebar").classList.toggle("hidden", name !== "home");
   }
 
-  function screenHeaderHtml(title, icon) {
+  function screenHeaderHtml(title, icon, showHome) {
+    if (showHome === undefined) showHome = true;
     return (
       '<div class="screen-header">' +
-        '<div class="home-btn" data-goto="home">🏠</div>' +
+        (showHome ? '<div class="home-btn" data-goto="home">🏠</div>' : '') +
         (icon ? '<span class="header-icon">' + icon + '</span>' : '') +
         '<div class="header-title">' + title + '</div>' +
       '</div>'
@@ -665,8 +666,8 @@
             '<div class="all-lights-top-row">' +
               barAdjusterHtml("alllights", 5) +
             '</div>' +
-            '<div class="swatch-grid-row">' +
-              '<div class="swatch-grid">' + colorSwatchesHtml("all") + '</div>' +
+            '<div class="swatch-grid">' + colorSwatchesHtml("all") + '</div>' +
+            '<div class="advance-row">' +
               '<button class="master-btn nav-btn" data-goto="lights-zones">' + ARROW_RIGHT_ICON + '</button>' +
             '</div>' +
           '</div>' +
@@ -674,21 +675,21 @@
       '</div>' +
 
       '<div class="screen" id="screen-lights-zones">' +
-        screenHeaderHtml("Lights: Zones", "💡") +
-        '<div class="zone-picker-row">' +
-          '<div class="zone-picker">' +
-            '<div class="zone-list">' +
-              LIGHT_ZONES.map(function (z) {
-                return '<button class="zone-btn" id="zonebtn-' + z.key + '" data-zone-select="' + z.key + '">' +
-                  '<span class="zone-color-preview" id="zonepreview-' + z.key + '"></span>' + z.label +
-                '</button>';
-              }).join("") +
-            '</div>' +
-            '<div class="zone-editor">' +
-              barAdjusterHtml("zone-editor", 5) +
-              '<div class="swatch-grid" id="zone-editor-swatches">' + colorSwatchesHtml("selected") + '</div>' +
-            '</div>' +
+        screenHeaderHtml("Lights", "💡", false) +
+        '<div class="zone-picker">' +
+          '<div class="zone-list">' +
+            LIGHT_ZONES.map(function (z) {
+              return '<button class="zone-btn" id="zonebtn-' + z.key + '" data-zone-select="' + z.key + '">' +
+                '<span class="zone-color-preview" id="zonepreview-' + z.key + '"></span>' + z.label +
+              '</button>';
+            }).join("") +
           '</div>' +
+          '<div class="zone-editor">' +
+            barAdjusterHtml("zone-editor", 5) +
+            '<div class="swatch-grid" id="zone-editor-swatches">' + colorSwatchesHtml("selected") + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="advance-row">' +
           '<button class="master-btn nav-btn" data-goto="lights">' + ARROW_LEFT_ICON + '</button>' +
         '</div>' +
       '</div>' +

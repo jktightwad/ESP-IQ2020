@@ -122,6 +122,8 @@ body {
    keep the default theme automatically. */
 #screen-jets { --accent: #a855f7; --accent-soft: #3b1064; background: radial-gradient(ellipse at top, #4c1d95, #1e0a3c 75%); }
 #screen-lights, #screen-lights-zones { --accent: #ef4444; --accent-soft: #5c1414; background: radial-gradient(ellipse at top, #7f1d1d, #2a0a0a 75%); }
+#screen-lights .header-icon, #screen-lights-zones .header-icon { font-size: 12cqh; }
+#screen-lights .header-title, #screen-lights-zones .header-title { font-size: 10cqh; }
 #screen-music, #screen-music-detail { --accent: #22c55e; --accent-soft: #14401f; background: radial-gradient(ellipse at top, #14532d, #06210f 75%); }
 #screen-temp { background: radial-gradient(ellipse at top, #2f7fd6, #123249 75%); }
 
@@ -235,9 +237,14 @@ body {
 .temp-tile .value {
   font-family: "Arial Narrow", "Roboto Condensed", "Helvetica Neue", Arial, sans-serif;
   font-stretch: condensed;
-  font-size: 105cqh;
+  font-size: 92cqh;
   font-weight: 700;
   line-height: 1;
+  /* The named condensed fonts above aren't guaranteed to exist on every
+     device, so font-stretch alone can't be relied on - negative letter-
+     spacing pulls the digits together regardless of which font actually
+     renders, and the smaller size keeps "F" from clipping at the edge. */
+  letter-spacing: -0.06em;
 }
 .temp-tile .unit {
   font-size: 24cqh;
@@ -302,6 +309,7 @@ body {
   font-size: 65cqh;
   font-weight: 700;
   line-height: 1;
+  letter-spacing: -0.06em;
 }
 .temp-adjust .target-unit {
   font-size: 20cqh;
@@ -499,9 +507,10 @@ body {
    rectangles with a big arrow on the physical remote, unlike the
    circular power buttons that share this same base height/color. */
 .master-btn.nav-btn {
-  width: 35cqh;
+  width: 45cqh;
   border-radius: 20%;
   font-size: 9cqh;
+  background: #1a1a1a;
 }
 
 .speed-buttons {
@@ -526,26 +535,26 @@ body {
 
 /* Lights screen: Moods is a persistent left column (like the real
    remote's layout), main content (All Lights) on the right, rather than
-   everything stacked in one vertical flow. Mood buttons are square,
-   sized from the column's available height (not a guessed width) so the
-   column itself shrinks to fit them instead of leaving a wide empty
-   gutter next to narrower square buttons. */
+   everything stacked in one vertical flow. */
 .lights-layout {
   display: flex;
   gap: 3cqw;
 }
+/* Fixed width, independent of the button size - shrinking the buttons
+   (below) to fit all 4 on screen shouldn't also shrink this panel. */
 .moods-col {
   display: flex;
   flex-direction: column;
-  gap: 1.5cqh;
+  gap: 1.2cqh;
   flex-shrink: 0;
-  padding: 0 2.5cqw;
+  width: 20cqw;
+  padding: 0 2cqw;
 }
-.lights-main { flex: 1; min-width: 0; }
+.lights-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .mood-btn {
   aspect-ratio: 1;
   width: auto;
-  height: calc((100cqh - 24cqh - (1.5cqh * 3)) / 4);
+  height: calc(((100cqh - 24cqh - (1.2cqh * 3)) / 4) * 0.7);
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -554,15 +563,17 @@ body {
   border: 1px solid #5c1414;
   background: rgba(0,0,0,0.2);
   color: #fff;
-  font-size: 4cqh;
+  font-size: 3cqh;
   font-weight: 600;
   cursor: pointer;
 }
 .mood-btn:active { background: var(--accent, #1f6fa8); }
 
+/* flex-start (not center) so "All Lights" lines up with "Moods" above -
+   centering it against the taller Power button pushed the text down. */
 .all-lights-header-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   margin-bottom: 1.5cqh;
 }
@@ -589,23 +600,18 @@ body {
   justify-content: flex-end;
   margin-top: 1.5cqh;
 }
+/* Pin the arrow to the bottom of the column instead of trailing right
+   after the content above it. */
+.lights-main .advance-row,
+#screen-lights-zones .advance-row {
+  margin-top: auto;
+}
 
 /* Lights: Zones screen - pick a zone on the left, shared color/intensity
    editor on the right, instead of repeating full controls per zone. */
-/* The forward/back arrow sits beside the swatch grid / zone picker,
-   vertically centered against it, instead of trailing below in normal
-   document flow where it could end up far from the content next to a
-   tall Moods/zone-list column. */
-.swatch-grid-row,
-.zone-picker-row {
-  display: flex;
-  align-items: center;
-  gap: 3cqw;
-}
+#screen-lights-zones.active { display: flex; flex-direction: column; }
 .zone-picker {
   display: flex;
-  flex: 1;
-  min-width: 0;
   gap: 3cqw;
 }
 .zone-list {
@@ -633,10 +639,10 @@ body {
 }
 .zone-color-preview {
   display: inline-block;
-  width: 2.2cqh;
-  height: 2.2cqh;
+  width: 3.6cqh;
+  height: 3.6cqh;
   border-radius: 50%;
-  margin-right: 1cqw;
+  margin-right: 1.2cqw;
   flex-shrink: 0;
   background: #555;
   border: 1px solid rgba(255,255,255,0.3);
