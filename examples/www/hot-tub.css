@@ -955,15 +955,28 @@ body {
    physical remote, where these are popouts launched from Home, not
    destinations of their own. Blue-themed like Settings. */
 /* Width measured directly off the reference photos: the popout's own
-   body starts at ~27% of the screen width, i.e. it's ~73% wide - not a
-   guess. See #home-popout-cover for what covers the remaining ~27% gap
-   between the (much narrower, ~13%) sidebar and this. */
+   body starts at ~27% of the *whole screen* width (sidebar included),
+   i.e. it's ~73% of the whole screen - not a guess. But this element's
+   containing block is #screen-home, which already excludes the sidebar
+   (~12.7% of the whole screen) - using 73% directly here would leave
+   only 100%-73%=27% for the cover on top of the sidebar's own width,
+   double-counting the sidebar and making the combined dark region
+   ~36% instead of the intended 27%. 83.65% here is 73% of the *whole
+   screen* re-expressed as a percentage of #screen-home's narrower
+   width: (0.73)/(1-0.127) = 0.8365. See #home-popout-cover for the
+   matching complementary math.
+   Plain % here, not cqw: cqw resolves against the container's own
+   content-box (excluding .screen's padding), while an absolutely
+   positioned element's left/right offsets resolve against the padding
+   box - mixing the two left an unaccounted-for gap (exactly the width
+   of .screen's own left+right padding) between this and the cover that
+   should exactly abut it. % keeps both resolving against the same box. */
 .home-popout {
   position: absolute;
   top: 0;
   bottom: 0;
   right: -100%;
-  width: 73cqw;
+  width: 83.65%;
   box-sizing: border-box;
   background: radial-gradient(ellipse at top, #2f7fd6, #123249 75%);
   transition: right 0.2s ease-out;
@@ -988,23 +1001,18 @@ body {
   top: 0;
   left: 0;
   bottom: 0;
-  width: 27cqw;
+  width: 16.35%;
   background: #0b1e2d;
 }
 .home-popout-cover.open { display: block; }
-/* Belongs to the popout itself (each one has its own). Pokes left past
-   the popout's own edge into #home-popout-cover's territory - measured
-   off the reference, where the arrow visibly extends further left than
-   the popout body. This is safe from the horizontal-overflow clipping
-   on .app-content/.screen (needed elsewhere to stop a different layout
-   bug) because the popout's own edge sits well inside the screen's
-   positive coordinate space now (~27% in), so poking another ~5% left
-   never goes negative. */
+/* Belongs to the popout itself (each one has its own), sitting just
+   inside its own left edge - on the blue popout area itself, per the
+   reference (not straddling the seam or poking into the dark cover). */
 .home-popout-collapse {
   display: none;
   position: absolute;
   top: 50%;
-  left: -5cqw;
+  left: 1cqh;
   transform: translateY(-50%);
   width: 6cqh;
   height: 10cqh;
@@ -1026,7 +1034,10 @@ body {
   color: #eaf2f6;
 }
 .home-popout-btn {
-  width: 55cqw;
+  /* % of .home-popout's own content box, not cqw (which would resolve
+     against #screen-home's, a different and much wider reference,
+     making the buttons render far wider than the popout they're in). */
+  width: 58%;
   padding: 3cqh 0;
   border-radius: 1.4cqh;
   border: 1px solid #3f8fe0;
