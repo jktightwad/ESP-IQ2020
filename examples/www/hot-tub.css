@@ -73,6 +73,7 @@ body {
    height is (100% minus the 3 gaps and top/bottom padding) / 4, instead
    of guessing a width and hoping leftover space distributes evenly. */
 .app-sidebar {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 1.2cqh;
@@ -82,7 +83,12 @@ body {
   border-right: 1px solid #1e4a67;
 }
 .app-sidebar.hidden { display: none; }
-.sidebar-tile {
+/* Compound selector (not just .sidebar-tile) so this reliably beats the
+   plain .icon-tile rule below regardless of source order - two classes
+   of equal specificity used to depend on declaration order, and
+   .icon-tile's dark navy background was winning, leaving the sidebar
+   dark instead of the bright blue the physical buttons actually are. */
+.icon-tile.sidebar-tile {
   flex: none;
   width: auto;
   height: calc((100cqh - 1.2cqh * 3 - 0.8cqh * 2) / 4);
@@ -90,6 +96,17 @@ body {
   background: #2f7fd6;
   border-color: #3f8fe0;
 }
+/* Dims the icon rail (not fully hidden) while a popout covers the rest
+   of Home - "covered so you can tell they're available" per reference. */
+.app-sidebar-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 12, 20, 0.55);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease-out;
+}
+.app-sidebar.popout-open .app-sidebar-scrim { opacity: 1; }
 
 .app-content {
   flex: 1;
@@ -949,17 +966,18 @@ body {
   padding: 4cqh 8cqw;
 }
 .home-popout.open { right: 0; }
-/* Only rendered (and only takes up space / receives clicks) while its
-   popout is open - it used to be positioned here unconditionally, which
-   left it poking into view over the Home screen even when "closed"
-   (right:-100% only moves the popout's own box, not this). Small plain
-   chevron, not the big master-btn/nav-btn treatment - the reference's
-   collapse button is a small subtle square, not a wide bold arrow. */
+/* Shared by both popouts and anchored to the sidebar itself, not to
+   either popout - .app-content/.screen both clip horizontal overflow
+   (needed elsewhere to stop layout bugs from leaking into a page
+   scrollbar), so an arrow anchored to a popout and poking left past the
+   screen's own edge was silently clipped and invisible. .app-sidebar has
+   no such clipping, so bleeding this to the right off *its* edge is what
+   actually renders. Only shown while a popout is open. */
 .home-popout-collapse {
   display: none;
   position: absolute;
   top: 50%;
-  left: -6cqh;
+  right: -6cqh;
   transform: translateY(-50%);
   width: 6cqh;
   height: 10cqh;
@@ -972,7 +990,7 @@ body {
   justify-content: center;
   cursor: pointer;
 }
-.home-popout.open .home-popout-collapse { display: flex; }
+.app-sidebar.popout-open .home-popout-collapse { display: flex; }
 .home-popout-title {
   font-style: italic;
   text-transform: uppercase;

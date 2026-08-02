@@ -18,10 +18,17 @@
   };
   var AUDIO_SOURCES = ["iPOD", "TV", "Aux", "Bluetooth"];
 
-  // Splashing-water emoji instead of the cyclone/swirl used before - it's
-  // a core, universally-supported emoji (unlike some of the more obscure
-  // symbols used elsewhere) and reads much more like a jet spray.
-  var JETS_ICON = "💦";
+  // Custom "horn nozzle spraying water" SVG, matching the actual reference
+  // icon (a party-horn-shaped nozzle with droplets fanning out of the
+  // wide end) - not a turbine/fan blade, and not the splash emoji this
+  // used to be. Hand-authored without a live renderer to check against,
+  // so treat this as a first pass to refine once it's actually on screen.
+  var JETS_ICON = '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">' +
+    '<path d="M5.5 19.5c-.8.6-1.8-.5-1.1-1.3L13.8 5.4c1.2-1.6 3.7-.2 2.9 1.7L10.4 21c-.5 1.1-2 .8-2.1-.4l-.4-3.1-3.1.7c-.5.1-.9-.4-.6-.9z"></path>' +
+    '<path d="M16 5.2c1.6-2 4.6-1.3 4.7 1 .1 1.8-1.7 2.6-2.9 1.4-1-1-1-1.7-1.8-2.4z"></path>' +
+    '<path d="M18.3 8.6c1.9-.6 3.8 1.4 2.7 3.1-.9 1.4-2.7 1-3.1-.5-.3-1-.1-1.8.4-2.6z"></path>' +
+    '<path d="M14.4 3.4c1.3-1.5 3.8-.6 3.6 1.4-.2 1.5-1.8 2-2.8.9-.8-.9-.6-1.5-.8-2.3z"></path>' +
+  '</svg>';
 
   // Inline SVG instead of the Unicode power glyph (U+23FB) - that codepoint
   // isn't in every mobile font's emoji set and was rendering as a "tofu"
@@ -528,14 +535,28 @@
       q("screen-" + n).classList.toggle("active", n === name);
     });
     q("app-sidebar").classList.toggle("hidden", name !== "home");
-    if (name !== "home") { closeHomePopout("memory-popout"); closeHomePopout("clean-popout"); }
+    if (name !== "home") closeHomePopouts();
   }
 
   // Memory and Clean Cycle are slide-out popouts over the Home screen
-  // (with the icon rail staying visible behind them) rather than separate
-  // full-screen navigations - matches the physical remote.
-  function openHomePopout(id) { q(id).classList.add("open"); }
-  function closeHomePopout(id) { q(id).classList.remove("open"); }
+  // (icon rail stays visible, dimmed by a scrim, behind them) rather than
+  // separate full-screen navigations - matches the physical remote, which
+  // shows the popout over the right ~3/4 of the screen and a translucent
+  // (not fully hidden) rail over the left ~1/4. Only one is ever open at
+  // a time, and they share a single collapse arrow attached to the
+  // sidebar itself (not to each popout) - .app-content/.screen both clip
+  // horizontal overflow, so an arrow anchored to a popout and poking left
+  // past the screen's own edge gets silently clipped; the sidebar has no
+  // such clipping, so anchoring it there instead is what actually works.
+  var HOME_POPOUT_IDS = ["memory-popout", "clean-popout"];
+  function openHomePopout(id) {
+    HOME_POPOUT_IDS.forEach(function (pid) { q(pid).classList.toggle("open", pid === id); });
+    q("app-sidebar").classList.add("popout-open");
+  }
+  function closeHomePopouts() {
+    HOME_POPOUT_IDS.forEach(function (pid) { q(pid).classList.remove("open"); });
+    q("app-sidebar").classList.remove("popout-open");
+  }
 
   function screenHeaderHtml(title, icon, showHome) {
     if (showHome === undefined) showHome = true;
@@ -627,6 +648,8 @@
         '<button class="icon-tile sidebar-tile" data-open-popout="memory-popout"><span class="glyph">' + MEMORY_ICON + '</span></button>' +
         '<button class="icon-tile sidebar-tile" data-open-popout="clean-popout"><span class="glyph">' + CLEAN_ICON + '</span></button>' +
         '<button class="icon-tile sidebar-tile" data-goto="settings"><span class="glyph">⚙️</span></button>' +
+        '<div class="app-sidebar-scrim"></div>' +
+        '<button class="home-popout-collapse" id="home-popout-collapse">◀</button>' +
       '</div>' +
       '<div class="app-content">' +
 
@@ -646,13 +669,11 @@
           '</div>' +
         '</div>' +
         '<div class="home-popout" id="memory-popout">' +
-          '<button class="home-popout-collapse" data-close-popout="memory-popout">◀</button>' +
           '<div class="home-popout-title">Memory:</div>' +
           '<button class="home-popout-btn" id="memory-restore-btn" title="Restore the last saved settings">Restore</button>' +
           '<button class="home-popout-btn" id="memory-save-btn" title="Save the current settings">Save</button>' +
         '</div>' +
         '<div class="home-popout" id="clean-popout">' +
-          '<button class="home-popout-collapse" data-close-popout="clean-popout">◀</button>' +
           '<div class="home-popout-title">Clean Cycle:</div>' +
           '<button class="home-popout-btn" id="clean-start-btn">Start</button>' +
         '</div>' +
@@ -850,9 +871,7 @@
     document.querySelectorAll("[data-open-popout]").forEach(function (el) {
       el.addEventListener("click", function () { openHomePopout(el.getAttribute("data-open-popout")); });
     });
-    document.querySelectorAll("[data-close-popout]").forEach(function (el) {
-      el.addEventListener("click", function () { closeHomePopout(el.getAttribute("data-close-popout")); });
-    });
+    q("home-popout-collapse").addEventListener("click", closeHomePopouts);
     q("home-dial").addEventListener("click", function () { showScreen("temp"); });
     q("global-power-btn").addEventListener("click", globalPowerToggle);
     q("tile-jets").addEventListener("click", jetsTileTap);
