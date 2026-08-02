@@ -71,17 +71,14 @@ body {
 /* Sidebar icons are square (like the physical remote's) and their size is
    computed to exactly fill the column's height edge-to-edge: each tile's
    height is (100% minus the 3 gaps and top/bottom padding) / 4, instead
-   of guessing a width and hoping leftover space distributes evenly. */
-/* Explicit 1/4-of-the-screen width (matching the reference, where the
-   popout covers the remaining 3/4) instead of letting width be an
-   incidental side effect of the square tiles' own height/4 formula -
-   that math alone was only landing around 1/8 of the total width, far
-   narrower than intended, which is also why the Home popout (100% of
-   the remaining space) was covering more of the screen than it should. */
+   of guessing a width and hoping leftover space distributes evenly. The
+   column's own width is just whatever that produces (content-driven),
+   not forced to any fraction of the screen - the "left 1/4" from the
+   reference describes the dimmed/non-actionable region while a popout
+   is open, not the sidebar's own resting size at all other times. That
+   region is wider than the sidebar itself; see .home-popout's width. */
 .app-sidebar {
   position: relative;
-  width: 25cqw;
-  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 1.2cqh;
@@ -95,17 +92,10 @@ body {
    plain .icon-tile rule below regardless of source order - two classes
    of equal specificity used to depend on declaration order, and
    .icon-tile's dark navy background was winning, leaving the sidebar
-   dark instead of the bright blue the physical buttons actually are.
-   width:100% (default align-items:stretch fills the column) instead of
-   width:auto+centered - the tiles should fill the sidebar's own width
-   edge-to-edge like the physical buttons, not float as small squares
-   with empty space on either side. Both width and height are now
-   explicit, so the base .icon-tile's aspect-ratio:1 has no effect here -
-   these end up as slightly-wide rectangles rather than perfect squares,
-   matching the real buttons closer than a forced square would. */
+   dark instead of the bright blue the physical buttons actually are. */
 .icon-tile.sidebar-tile {
   flex: none;
-  width: 100%;
+  width: auto;
   height: calc((100cqh - 1.2cqh * 3 - 0.8cqh * 2) / 4);
   padding: 0;
   background: #2f7fd6;
@@ -964,12 +954,16 @@ body {
    source popout) instead of separate full screens - matches the
    physical remote, where these are popouts launched from Home, not
    destinations of their own. Blue-themed like Settings. */
+/* Narrower than the full remaining width so it doesn't reach all the way
+   to the (narrow, correctly-sized) sidebar - leaves a gap that, combined
+   with the sidebar's own width, approximates the reference's "left 1/4
+   is a dimmed, non-actionable region" look while a popout is open. */
 .home-popout {
   position: absolute;
   top: 0;
   bottom: 0;
   right: -100%;
-  width: 100%;
+  width: 82cqw;
   box-sizing: border-box;
   background: radial-gradient(ellipse at top, #2f7fd6, #123249 75%);
   transition: right 0.2s ease-out;
