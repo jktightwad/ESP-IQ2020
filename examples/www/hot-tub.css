@@ -51,17 +51,19 @@ html, body {
   }
 }
 
-/* Sidebar icons are square (like the physical remote's), sized from the
-   column's width, then spread out with justify-content to use the full
-   column height without stretching into rectangles. */
+/* Sidebar icons are square (like the physical remote's). The column's
+   width used to be a fixed guess independent of the actual screen height,
+   which made 4 small squares with big leftover gaps between them on a
+   tall screen - sizing the column itself from viewport height (vh) means
+   the squares are sized to actually fill the column edge-to-edge. */
 .app-sidebar {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 8px;
-  width: 84px;
+  gap: 1.2vh;
+  width: 22vh;
   flex-shrink: 0;
-  padding: 8px;
+  padding: 1vh;
   background: #0f2436;
   border-right: 1px solid #1e4a67;
 }
@@ -173,12 +175,12 @@ html, body {
   cursor: pointer;
 }
 .temp-tile .value {
-  font-size: 55cqh;
+  font-size: 88cqh;
   font-weight: 600;
   line-height: 1;
 }
 .temp-tile .unit {
-  font-size: 16cqh;
+  font-size: 22cqh;
   color: #9cd0ec;
 }
 
