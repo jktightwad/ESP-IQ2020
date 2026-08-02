@@ -195,8 +195,7 @@
   function q(id) { return document.getElementById(id); }
 
   function renderHome() {
-    q("home-temp-value").textContent = state.currentTempF != null ? Math.round(state.currentTempF) : "--";
-    q("home-target-value").textContent = state.targetTempF != null ? Math.round(state.targetTempF) + "°F target" : "";
+    q("home-temp-value").textContent = state.targetTempF != null ? Math.round(state.targetTempF) : "--";
     setBadge("badge-summer", state.summerTimer);
     setBadge("badge-lock", state.spaLock || state.tempLock);
     setTile("tile-lights", state.lights);
@@ -407,13 +406,78 @@
     }
   }
 
+  // ---- Memory (Save/Restore) ----
+  // No backing storage on the device for this - it's purely a browser-side
+  // convenience that captures the current settings and re-applies them
+  // later through the same API calls the rest of the UI already uses.
+  var MEMORY_KEY = "hottub_memory";
+
+  function captureMemorySnapshot() {
+    return {
+      targetTempF: state.targetTempF,
+      jets1: state.jets1,
+      jets2Level: state.jets2Level,
+      lights: state.lights,
+      lightsCycleSpeed: state.lightsCycleSpeed,
+      zones: JSON.parse(JSON.stringify(state.zones)),
+      audioPower: state.audioPower,
+      audioSource: state.audioSource,
+      volume: state.volume
+    };
+  }
+
+  function saveMemory() {
+    localStorage.setItem(MEMORY_KEY, JSON.stringify({ savedAt: Date.now(), data: captureMemorySnapshot() }));
+    renderMemory();
+  }
+
+  function restoreMemory() {
+    var raw = localStorage.getItem(MEMORY_KEY);
+    if (!raw) return;
+    var parsed;
+    try { parsed = JSON.parse(raw); } catch (e) { return; }
+    var mem = parsed && parsed.data;
+    if (!mem) return;
+
+    if (mem.targetTempF != null) setTargetTempF(mem.targetTempF);
+    if (mem.jets1) apiPost("/fan/jets_1/turn_on"); else apiPost("/fan/jets_1/turn_off");
+    setJets2(mem.jets2Level || 0);
+    if (!!mem.lights !== !!state.lights) toggleSwitch("lights", state.lights);
+    if (mem.lightsCycleSpeed) setSelect("color_cycle_speed", mem.lightsCycleSpeed);
+    LIGHT_ZONES.forEach(function (z) {
+      var zs = mem.zones && mem.zones[z.key];
+      if (!zs) return;
+      if (zs.color) setSelect(z.colorId, zs.color);
+      if (zs.intensity != null) setNumber(z.intensityId, zs.intensity);
+    });
+    if (!!mem.audioPower !== !!state.audioPower) toggleSwitch("audio", state.audioPower);
+    if (mem.audioSource) setSelect("audio_source", mem.audioSource);
+    if (mem.volume != null) setNumber("volume", mem.volume);
+  }
+
+  function renderMemory() {
+    var raw = localStorage.getItem(MEMORY_KEY);
+    var status = q("memory-status");
+    var restoreBtn = q("memory-restore-btn");
+    if (!status || !restoreBtn) return;
+    if (raw) {
+      var savedAt;
+      try { savedAt = JSON.parse(raw).savedAt; } catch (e) {}
+      status.textContent = savedAt ? ("Saved " + new Date(savedAt).toLocaleString()) : "Settings saved";
+      restoreBtn.disabled = false;
+    } else {
+      status.textContent = "No saved settings yet";
+      restoreBtn.disabled = true;
+    }
+  }
+
   // ---- Screen switching ----
   // The left icon sidebar (Power/Clean Cycle/Settings) only shows on the
   // Home screen, matching the physical remote - every other screen shows
   // just its own content plus a Home icon to jump back.
 
   function showScreen(name) {
-    ["home", "temp", "jets", "lights", "lights-zones", "music", "music-detail", "clean", "settings"].forEach(function (n) {
+    ["home", "temp", "jets", "lights", "lights-zones", "music", "music-detail", "memory", "clean", "settings"].forEach(function (n) {
       q("screen-" + n).classList.toggle("active", n === name);
     });
     q("app-sidebar").classList.toggle("hidden", name !== "home");
@@ -502,10 +566,9 @@
     app.id = "app";
     app.innerHTML =
       // Sidebar only shows on the Home screen, matching the real remote.
-      // Memory isn't included since there's no backing "last active
-      // settings" data to restore.
       '<div class="app-sidebar" id="app-sidebar">' +
         '<button class="icon-tile sidebar-tile" id="global-power-btn" title="All off, or jets+lights on if off"><span class="glyph">' + POWER_ICON + '</span></button>' +
+        '<button class="icon-tile sidebar-tile" data-goto="memory"><span class="glyph">💾</span></button>' +
         '<button class="icon-tile sidebar-tile" data-goto="clean"><span class="glyph">🧼</span></button>' +
         '<button class="icon-tile sidebar-tile" data-goto="settings"><span class="glyph">⚙️</span></button>' +
       '</div>' +
@@ -518,7 +581,6 @@
         '</div>' +
         '<div class="temp-tile" id="home-dial">' +
           '<span class="value"><span id="home-temp-value">--</span><span class="unit">°F</span></span>' +
-          '<span class="label" id="home-target-value"></span>' +
         '</div>' +
         '<div class="features-row">' +
           '<div class="icon-tile feature-jets" id="tile-jets" data-goto="jets"><span class="glyph">🌀</span><span class="name">Jets</span></div>' +
@@ -570,10 +632,12 @@
             MOODS.map(function (m, i) { return '<button class="mood-btn" data-mood="' + i + '">' + (i + 1) + '</button>'; }).join("") +
           '</div>' +
           '<div class="lights-main">' +
-            '<div class="icon-section-label">All Lights</div>' +
+            '<div class="all-lights-header-row">' +
+              '<div class="icon-section-label">All Lights</div>' +
+              '<button class="master-btn" id="alllights-power">' + POWER_ICON + '</button>' +
+            '</div>' +
             '<div class="all-lights-top-row">' +
               barAdjusterHtml("alllights", 5) +
-              '<button class="master-btn" id="alllights-power">' + POWER_ICON + '</button>' +
             '</div>' +
             '<div class="swatch-grid">' + colorSwatchesHtml("all") + '</div>' +
             '<div class="icon-section-label">Cycle Speed</div>' +
@@ -639,6 +703,17 @@
         '<div class="range-note">Bass/Treble/Balance won\'t accept negative values set from here - a firmware quirk on the tub\'s side, only shows correctly if set from the physical remote.</div>' +
         '<div class="advance-row">' +
           '<button class="master-btn" data-goto="music">◀</button>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="screen" id="screen-memory">' +
+        screenHeaderHtml("Memory") +
+        '<div class="clean-panel">' +
+          '<div class="status" id="memory-status"></div>' +
+          '<div class="memory-actions">' +
+            '<button class="start-btn" id="memory-save-btn">Save</button>' +
+            '<button class="start-btn" id="memory-restore-btn">Restore</button>' +
+          '</div>' +
         '</div>' +
       '</div>' +
 
@@ -757,6 +832,11 @@
     q("clean-start-btn").addEventListener("click", function () {
       apiPost("/switch/clean_cycle/turn_on");
     });
+
+    // Memory
+    q("memory-save-btn").addEventListener("click", saveMemory);
+    q("memory-restore-btn").addEventListener("click", restoreMemory);
+    renderMemory();
 
     // Music
     q("music-power-btn").addEventListener("click", function () { toggleSwitch("audio", state.audioPower); });
