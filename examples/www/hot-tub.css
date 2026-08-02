@@ -108,6 +108,7 @@ body {
 .screen {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 2.5cqh 3cqw;
   display: none;
   container-type: size;
@@ -934,9 +935,10 @@ body {
 .home-popout {
   position: absolute;
   top: 0;
-  right: -100%;
   bottom: 0;
-  left: 0;
+  right: -100%;
+  width: 100%;
+  box-sizing: border-box;
   background: radial-gradient(ellipse at top, #2f7fd6, #123249 75%);
   transition: right 0.2s ease-out;
   display: flex;
