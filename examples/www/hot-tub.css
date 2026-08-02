@@ -51,25 +51,27 @@ html, body {
   }
 }
 
+/* Sidebar icons stack to fill the whole screen height edge-to-edge, like
+   the physical remote's own icon column, rather than sitting as small
+   fixed-size squares with wasted space above/below. */
 .app-sidebar {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  width: 76px;
+  gap: 8px;
+  width: 64px;
   flex-shrink: 0;
-  padding: 18px 10px;
+  padding: 8px;
   background: #0f2436;
   border-right: 1px solid #1e4a67;
 }
 .app-sidebar.hidden { display: none; }
 .sidebar-tile {
-  flex: none;
-  width: 52px;
-  height: 52px;
+  flex: 1;
+  width: 100%;
+  min-height: 0;
   padding: 0;
 }
-.sidebar-tile .glyph { margin: 0; font-size: 22px; }
+.sidebar-tile .glyph { margin: 0; font-size: clamp(20px, 5vh, 28px); }
 
 .app-content {
   flex: 1;
@@ -87,7 +89,7 @@ html, body {
   display: none;
 }
 .screen.active { display: block; }
-#screen-home.active { display: flex; flex-direction: column; }
+#screen-home.active { display: flex; flex-direction: column; padding: 10px 12px; gap: 8px; }
 #screen-temp.active { display: flex; flex-direction: column; }
 
 /* Per-screen accent colors, matching the real remote (Jets = purple,
@@ -134,13 +136,17 @@ html, body {
   margin: 4px 0 10px;
 }
 
-/* Home screen */
+/* Home screen - the temperature tile and the feature row below it split
+   the available height evenly (matching the physical remote, where both
+   rows are about the same height and the whole thing fills the screen
+   edge-to-edge), instead of a small centered tile with wasted space
+   around it. */
 .status-row {
   display: flex;
   justify-content: center;
   gap: 18px;
-  margin-bottom: 18px;
-  min-height: 22px;
+  flex: 0 0 auto;
+  min-height: 0;
 }
 .status-badge {
   font-size: 12px;
@@ -155,13 +161,12 @@ html, body {
 }
 
 .temp-tile {
+  flex: 1;
+  min-height: 0;
   width: 100%;
-  max-width: 340px;
-  min-height: 190px;
-  border-radius: 24px;
+  border-radius: 18px;
   background: radial-gradient(circle at 35% 30%, #1f6fa8, #0f3350 70%);
   border: 4px solid #2a80b8;
-  margin: auto auto 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -169,37 +174,39 @@ html, body {
   cursor: pointer;
 }
 .temp-tile .value {
-  font-size: 84px;
+  font-size: clamp(40px, 12vh, 90px);
   font-weight: 600;
   line-height: 1;
 }
 .temp-tile .unit {
-  font-size: 28px;
+  font-size: clamp(16px, 4vh, 28px);
   color: #9cd0ec;
 }
 
 .features-row {
   display: flex;
-  gap: 14px;
+  flex: 1;
+  min-height: 0;
+  gap: 10px;
   width: 100%;
-  margin-top: 24px;
 }
 
 .icon-tile {
   flex: 1;
+  min-height: 0;
   background: #123249;
   border: 1px solid #1e4a67;
   border-radius: 14px;
-  padding: 16px 8px;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
 }
-.icon-tile .glyph { font-size: 28px; display: block; margin-bottom: 8px; }
-.icon-tile .name { font-size: 13px; color: #cfe8f7; }
+.icon-tile .glyph { font-size: clamp(24px, 6vh, 40px); display: block; }
 .icon-tile.active { background: var(--accent, #1f6fa8); }
 .icon-tile.feature-jets { --accent: #a855f7; border-color: #4a2a6b; }
 .icon-tile.feature-music { --accent: #22c55e; border-color: #1e5c36; }
-.icon-tile.feature-lights { --accent: #ef4444; border-color: #6b2a2a; }
+.icon-tile.feature-lights { --accent: #f97316; border-color: #7c3d0a; }
 
 /* Temperature screen - up/down stacked vertically next to the number,
    matching the physical remote rather than side-by-side buttons. */

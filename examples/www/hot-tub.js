@@ -21,7 +21,16 @@
   // Inline SVG instead of the Unicode power glyph (U+23FB) - that codepoint
   // isn't in every mobile font's emoji set and was rendering as a "tofu"
   // box, so this guarantees the icon looks the same everywhere.
-  var POWER_ICON = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="12"></line><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path></svg>';
+  // Sized in "1em" so they scale with the glyph's own font-size, exactly
+  // like the emoji icons used alongside them (gear, cyclone, bulb, etc).
+  var POWER_ICON = '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="12"></line><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path></svg>';
+
+  // Matches the physical remote's actual sidebar icons (confirmed from a
+  // photo of the real panel) - a star with "M" for Memory, and a water
+  // droplet with a circulation mark for Clean/Filter, rather than the
+  // generic floppy-disk/soap emoji stand-ins used before.
+  var MEMORY_ICON = '<svg viewBox="0 0 24 24" width="1em" height="1em"><path d="M12 2.5l2.7 5.9 6.4.9-4.6 4.6 1.1 6.4L12 17.4 6.4 20.3l1.1-6.4-4.6-4.6 6.4-.9L12 2.5z" fill="currentColor"></path><text x="12" y="15.5" font-size="7.5" font-weight="700" text-anchor="middle" fill="#0b2036" font-family="Arial, sans-serif">M</text></svg>';
+  var CLEAN_ICON = '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 3.2c3.6 4.6 5.6 7.7 5.6 10.4a5.6 5.6 0 1 1-11.2 0c0-2.7 2-5.8 5.6-10.4z"></path><path d="M9.3 13.6a2.9 2.9 0 0 0 4.6 1.9M14.7 10.6a2.9 2.9 0 0 0-4.6-1.9"></path></svg>';
 
   // Fixed presets from the manual's "MOODS" section on the Lights screen.
   // "Magenta"/"Aqua" in the manual map to our closest available options
@@ -568,8 +577,8 @@
       // Sidebar only shows on the Home screen, matching the real remote.
       '<div class="app-sidebar" id="app-sidebar">' +
         '<button class="icon-tile sidebar-tile" id="global-power-btn" title="All off, or jets+lights on if off"><span class="glyph">' + POWER_ICON + '</span></button>' +
-        '<button class="icon-tile sidebar-tile" data-goto="memory"><span class="glyph">💾</span></button>' +
-        '<button class="icon-tile sidebar-tile" data-goto="clean"><span class="glyph">🧼</span></button>' +
+        '<button class="icon-tile sidebar-tile" data-goto="memory"><span class="glyph">' + MEMORY_ICON + '</span></button>' +
+        '<button class="icon-tile sidebar-tile" data-goto="clean"><span class="glyph">' + CLEAN_ICON + '</span></button>' +
         '<button class="icon-tile sidebar-tile" data-goto="settings"><span class="glyph">⚙️</span></button>' +
       '</div>' +
       '<div class="app-content">' +
@@ -583,9 +592,9 @@
           '<span class="value"><span id="home-temp-value">--</span><span class="unit">°F</span></span>' +
         '</div>' +
         '<div class="features-row">' +
-          '<div class="icon-tile feature-jets" id="tile-jets" data-goto="jets"><span class="glyph">🌀</span><span class="name">Jets</span></div>' +
-          '<div class="icon-tile feature-music" id="tile-music" data-goto="music"><span class="glyph">🎵</span><span class="name">Music</span></div>' +
-          '<div class="icon-tile feature-lights" id="tile-lights" data-goto="lights"><span class="glyph">💡</span><span class="name">Lights</span></div>' +
+          '<div class="icon-tile feature-jets" id="tile-jets" data-goto="jets"><span class="glyph">🌀</span></div>' +
+          '<div class="icon-tile feature-music" id="tile-music" data-goto="music"><span class="glyph">🎵</span></div>' +
+          '<div class="icon-tile feature-lights" id="tile-lights" data-goto="lights"><span class="glyph">💡</span></div>' +
         '</div>' +
       '</div>' +
 
