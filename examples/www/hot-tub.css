@@ -583,19 +583,24 @@ body {
 
 /* flex-start (not center) so "All Lights" lines up with "Moods" above -
    centering it against the taller Power button pushed the text down. */
+/* position:relative + the button being position:absolute means the
+   button's size no longer affects this row's own height - previously a
+   flex row with the button as a normal flex item, so a big button made
+   the whole row tall and pushed the swatch grid down/off-screen. The
+   row's margin-bottom accounts for how far the button (taller than the
+   row itself) hangs below it, so it doesn't overlap the swatch grid. */
 .all-lights-header-row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 1cqh;
+  position: relative;
+  margin-bottom: 12cqh;
 }
 .all-lights-header-row .icon-section-label { margin: 0; }
-/* Smaller than the default master-btn (14cqh) - at full size it made
-   this row tall enough to push the swatch grid below it off the screen. */
 #alllights-power {
-  width: 27cqh;
-  height: 27cqh;
-  font-size: 12cqh;
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 16cqh;
+  height: 16cqh;
+  font-size: 7cqh;
 }
 .all-lights-top-row {
   margin-bottom: 2cqh;
@@ -718,20 +723,17 @@ body {
   margin: 1cqh 0 2cqh;
 }
 
-/* Music screen - power button sits on the right, matching the reference. */
-/* margin-left:auto on the button (not justify-content:space-between on
-   the row) keeps it pinned to the right whether or not .music-status is
-   visible - space-between only pushes it right when there are 2 flex
-   items, so it snapped to the left once .music-status got display:none
-   on power-on. */
+/* Music screen - power button sits under the OFF banner, on the right.
+   position:relative + the button being position:absolute means the
+   button's size doesn't affect this row's own height (it was a normal
+   flex item before, so its size pushed Volume/Source down) - the row's
+   margin-bottom accounts for how far the button hangs below it instead. */
 .music-power-row {
-  display: flex;
-  align-items: center;
-  gap: 3cqw;
-  margin-bottom: 2cqh;
+  position: relative;
+  margin-bottom: 14cqh;
 }
 .music-status {
-  flex: 1;
+  display: block;
   text-align: right;
   padding: 1cqh 2cqw;
   background: rgba(0,0,0,0.15);
@@ -740,11 +742,12 @@ body {
   letter-spacing: 0.08em;
 }
 .music-power-btn {
-  width: 28cqh;
-  height: 28cqh;
-  font-size: 12cqh;
-  margin-left: auto;
-  flex-shrink: 0;
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 18cqh;
+  height: 18cqh;
+  font-size: 8cqh;
 }
 
 /* A real popout panel for source selection (matching the manual), not
