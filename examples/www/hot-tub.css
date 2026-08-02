@@ -475,14 +475,12 @@ body {
   margin-bottom: 5cqh;
 }
 .jets-rows-col .jets-row:last-child { margin-bottom: 0; }
+/* Plain numeral, no circular badge - the reference just has the bare
+   number floating next to the row, not a filled/bordered chip. */
 .row-number-text {
-  width: 27.5cqh;
-  height: 27.5cqh;
-  border-radius: 50%;
-  background: var(--accent-soft, #14384f);
   color: #fff;
   font-size: 11cqh;
-  font-weight: 600;
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -510,6 +508,19 @@ body {
 }
 .jets-row .speed-btn.icon-only { font-size: 12cqh; }
 .speed-btn-spacer { visibility: hidden; }
+/* Inactive speed buttons are a translucent light pill against the purple
+   background in the reference (the default dark-navy speed-btn was
+   designed for the app's base theme and clashed here); the active one
+   still uses the app-wide dark+white-border "selected" look. */
+#screen-jets .speed-btn {
+  background: rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: #fff;
+}
+#screen-jets .speed-btn.on {
+  background: #1a1a1a;
+  border-color: #fff;
+}
 .master-btn {
   width: 14cqh;
   height: 14cqh;
@@ -691,9 +702,10 @@ body {
   height: calc(((100cqh - 24cqh - (1.2cqh * 3)) / 4) * 0.85);
   border-radius: 6px;
   flex-shrink: 0;
-  background: #555;
-  border: 2px solid var(--accent-soft, #5c1414);
+  background: transparent;
+  border: 2px solid var(--accent, #ef4444);
 }
+.zone-color-preview.on { background: var(--accent, #ef4444); }
 .zone-btn.selected .zone-color-preview {
   border-color: #fff;
   box-shadow: 0 0 0 2px var(--accent, #1f6fa8);
@@ -735,6 +747,9 @@ body {
 .now-playing-label {
   color: #9cd0ec;
   font-weight: 400;
+  font-size: 0.65em;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   margin-right: 0.6em;
 }
 
@@ -780,12 +795,12 @@ body {
 /* Anchored to the screen itself (sharing the header's own vertical
    space, top-right corner) instead of any content row - same fix as
    the Lights screen's power button, for the same reason. */
-/* top:2.5cqh (just the screen's own padding) landed this flush with the
-   header row - the reference actually aligns it a row lower, level with
-   the Song/Artist text (i.e. after the header, not beside it). */
+/* Reference photo (examples/reference/music_screen) shows the power
+   button level with the transport row (rewind/play/pause/ff), not the
+   Song/Artist text above it - top:20cqh was one row too high. */
 .music-power-btn {
   position: absolute;
-  top: 20cqh;
+  top: 30cqh;
   right: 3cqw;
   width: 14cqh;
   height: 14cqh;
@@ -799,11 +814,19 @@ body {
 .music-body .adjuster-pill {
   padding: 2.2cqh 2.5cqw;
 }
+/* Reference volume bar is a dense row of thin ticks (~16), not a handful
+   of chunky rounded blocks. */
 .music-body .segment {
-  width: 3cqw;
+  width: 1.6cqw;
   height: 7cqh;
+  border-radius: 1px;
 }
+/* Reference arrows sit in their own darker end-cap box attached to the
+   pill, instead of floating bare inside it. */
 .music-body .chev {
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 1cqh;
+  padding: 0.8cqh 1.2cqw;
   font-size: 6cqh;
 }
 #screen-music-detail .adjuster-pill {

@@ -280,7 +280,10 @@
       var btn = q("zonebtn-" + z.key);
       if (btn) btn.classList.toggle("selected", state.selectedLightZone === z.key);
       var preview = q("zonepreview-" + z.key);
-      if (preview) preview.style.backgroundColor = COLOR_SWATCH[state.zones[z.key].color] || "#555";
+      // The reference shows a plain accent-colored square per zone row (not
+      // a literal color swatch - all 4 rows show the same red), so this
+      // reflects the zone's on/off state instead of its assigned color.
+      if (preview) preview.classList.toggle("on", (state.zones[z.key].intensity || 0) > 0);
     });
     var zs = state.zones[state.selectedLightZone] || {};
     var editor = q("zone-editor-swatches");
@@ -778,9 +781,7 @@
             '<span class="transport-btn">⏸</span>' +
             '<span class="transport-btn">⏭</span>' +
           '</div>' +
-          '<div class="icon-section-label">Volume</div>' +
-          barAdjusterHtml("volume", 10) +
-          '<div class="icon-section-label">Source</div>' +
+          barAdjusterHtml("volume", 16) +
           '<div class="source-row">' +
             '<button class="source-select" id="source-select-btn">' +
               '<span id="source-select-label">--</span>' +
