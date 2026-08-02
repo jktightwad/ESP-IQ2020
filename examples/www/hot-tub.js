@@ -583,13 +583,15 @@
           '<span class="status-badge" id="badge-summer">Summer Timer</span>' +
           '<span class="status-badge" id="badge-lock">Locked</span>' +
         '</div>' +
-        '<div class="temp-tile" id="home-dial">' +
-          '<span class="value"><span id="home-temp-value">--</span><span class="unit">°F</span></span>' +
-        '</div>' +
-        '<div class="features-row">' +
-          '<div class="icon-tile feature-jets" id="tile-jets" data-goto="jets"><span class="glyph">' + JETS_ICON + '</span></div>' +
-          '<div class="icon-tile feature-music" id="tile-music" data-goto="music"><span class="glyph">🎵</span></div>' +
-          '<div class="icon-tile feature-lights" id="tile-lights" data-goto="lights"><span class="glyph">💡</span></div>' +
+        '<div class="home-main">' +
+          '<div class="temp-tile" id="home-dial">' +
+            '<span class="value"><span id="home-temp-value">--</span><span class="unit">°F</span></span>' +
+          '</div>' +
+          '<div class="features-row">' +
+            '<div class="icon-tile feature-jets" id="tile-jets" data-goto="jets"><span class="glyph">' + JETS_ICON + '</span></div>' +
+            '<div class="icon-tile feature-music" id="tile-music" data-goto="music"><span class="glyph">🎵</span></div>' +
+            '<div class="icon-tile feature-lights" id="tile-lights" data-goto="lights"><span class="glyph">💡</span></div>' +
+          '</div>' +
         '</div>' +
       '</div>' +
 
