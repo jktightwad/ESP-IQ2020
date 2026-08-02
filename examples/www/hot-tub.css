@@ -122,9 +122,7 @@ body {
    keep the default theme automatically. */
 #screen-jets { --accent: #a855f7; --accent-soft: #3b1064; background: radial-gradient(ellipse at top, #4c1d95, #1e0a3c 75%); }
 #screen-lights, #screen-lights-zones { --accent: #ef4444; --accent-soft: #5c1414; background: radial-gradient(ellipse at top, #7f1d1d, #2a0a0a 75%); }
-#screen-lights .header-icon, #screen-lights-zones .header-icon { font-size: 12cqh; }
-#screen-lights .header-title, #screen-lights-zones .header-title { font-size: 10cqh; }
-#screen-music, #screen-music-detail { --accent: #22c55e; --accent-soft: #14401f; background: radial-gradient(ellipse at top, #14532d, #06210f 75%); }
+#screen-music { --accent: #22c55e; --accent-soft: #14401f; background: radial-gradient(ellipse at top, #14532d, #06210f 75%); }
 #screen-temp { background: radial-gradient(ellipse at top, #2f7fd6, #123249 75%); }
 
 /* Every non-Home screen has this header instead of a persistent tab bar
@@ -150,7 +148,7 @@ body {
   flex-shrink: 0;
 }
 .header-icon {
-  font-size: 6cqh;
+  font-size: 12cqh;
   line-height: 1;
   display: flex;
   align-items: center;
@@ -158,7 +156,7 @@ body {
   flex-shrink: 0;
 }
 .header-title {
-  font-size: 5cqh;
+  font-size: 10cqh;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #6fb3d2;
@@ -237,8 +235,8 @@ body {
 .temp-tile .value {
   font-family: "Arial Narrow", "Roboto Condensed", "Helvetica Neue", Arial, sans-serif;
   font-stretch: condensed;
-  font-size: 88cqh;
-  font-weight: 700;
+  font-size: 108cqh;
+  font-weight: 500;
   line-height: 1;
   /* The named condensed fonts above aren't guaranteed to exist on every
      device, so font-stretch alone can't be relied on - negative letter-
@@ -251,9 +249,11 @@ body {
   color: #dff2ff;
   /* .unit inherits .value's negative letter-spacing by default, which
      was pulling "F" right up against the last digit - reset it and add
-     a bit of breathing room instead. */
+     a bit of breathing room instead. Align to the top of the line
+     instead of the baseline, like a superscript. */
   letter-spacing: normal;
   margin-left: 0.15em;
+  vertical-align: top;
 }
 
 /* Feature icons are square, sized to match the temp tile's height above
@@ -319,6 +319,8 @@ body {
 .temp-adjust .target-unit {
   font-size: 20cqh;
   font-weight: 700;
+  letter-spacing: normal;
+  vertical-align: top;
 }
 .step-buttons {
   display: flex;
@@ -339,11 +341,6 @@ body {
   background: #274a5e;
   color: #6a8a9a;
   cursor: not-allowed;
-}
-.range-note {
-  font-size: 2.5cqh;
-  color: #7fa8bf;
-  text-align: center;
 }
 
 /* Settings-style rows: a chevron/segment or OFF-ON control on the left,
@@ -392,12 +389,10 @@ body {
   flex: 1;
   margin-bottom: 0;
 }
-/* Extra specificity (3 classes vs .master-btn.nav-btn's 2) so this wins
-   over the wider general nav-btn sizing below regardless of source order. */
-.master-btn.nav-btn.settings-nav-btn {
-  width: 10cqh;
-  height: 10cqh;
-  font-size: 4cqh;
+/* Settings arrows now use the same size as the shared .nav-btn rule
+   below (matching the Lights screen's arrows) - the small square
+   override here was clipping the wide arrow icon against its corners. */
+.settings-nav-btn {
   flex-shrink: 0;
 }
 
@@ -435,11 +430,6 @@ body {
   background: #274a5e;
 }
 .segment.filled { background: var(--accent, #1f6fa8); }
-.adjuster-value {
-  min-width: 6cqw;
-  text-align: center;
-  font-size: 3.2cqh;
-}
 
 /* Jets screen - the power button sits to the right of both rows (like
    the physical remote), vertically centered, instead of below them. */
@@ -590,9 +580,9 @@ body {
 /* Smaller than the default master-btn (14cqh) - at full size it made
    this row tall enough to push the swatch grid below it off the screen. */
 #alllights-power {
-  width: 9cqh;
-  height: 9cqh;
-  font-size: 4cqh;
+  width: 27cqh;
+  height: 27cqh;
+  font-size: 12cqh;
 }
 .all-lights-top-row {
   margin-bottom: 2cqh;
@@ -602,16 +592,16 @@ body {
    untouched - this is scoped to Lights specifically). */
 .all-lights-top-row .adjuster-pill,
 .zone-editor .adjuster-pill {
-  padding: 3.6cqh 2.5cqw;
+  padding: 2.9cqh 2.5cqw;
 }
 .all-lights-top-row .segment,
 .zone-editor .segment {
   width: 3cqw;
-  height: 12cqh;
+  height: 9.6cqh;
 }
 .all-lights-top-row .chev,
 .zone-editor .chev {
-  font-size: 10cqh;
+  font-size: 8cqh;
 }
 #alllights-power.on { background: #1f9d55; }
 
@@ -715,11 +705,11 @@ body {
   margin: 1cqh 0 2cqh;
 }
 
-/* Music screen */
+/* Music screen - power button sits on the right, matching the reference. */
 .music-power-row {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   gap: 3cqw;
   margin-bottom: 2cqh;
 }
@@ -728,6 +718,29 @@ body {
   color: #9cd0ec;
   letter-spacing: 0.08em;
 }
+.music-power-btn {
+  width: 28cqh;
+  height: 28cqh;
+  font-size: 12cqh;
+}
+
+/* Source "dropdown" - a single row showing the current value plus an
+   arrow, cycling through options on tap, instead of a button per option
+   always visible at once. */
+.source-select {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 1.8cqh 3cqw;
+  border: none;
+  border-radius: 1.2cqh;
+  background: var(--accent, #1f6fa8);
+  color: #fff;
+  font-size: 3.2cqh;
+  cursor: pointer;
+}
+.source-select svg { width: 1.4em; }
 
 /* Clean cycle / Memory screens */
 .clean-panel {
