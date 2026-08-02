@@ -196,14 +196,14 @@ body {
 /* Temp tile + feature row share the exact same width (fit-content) and
    sit centered horizontally as a unit, matching the physical remote's
    proportions, instead of each independently stretching edge to edge.
-   Vertically this block fills the full screen height (flex:1) with
-   justify-content:space-between, so the temp tile sits at the very top
-   and the feature row at the very bottom - matching the reference photo
-   - instead of the pair floating centered with empty margin above/below. */
+   The temp tile grows to fill whatever height is left (flex:1) after the
+   feature row's own fixed size, with just a small gap between them -
+   not justify-content:space-between, which left a large empty gap in the
+   middle instead of an actually-tall temp tile. */
 .home-main {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  gap: 1.5cqh;
   width: fit-content;
   flex: 1;
   min-height: 0;
@@ -216,9 +216,11 @@ body {
    is what actually gets the numerals to reach the top/bottom edges. A
    condensed font keeps the now much-larger digits from getting too wide. */
 .temp-tile {
-  /* Same height as a feature icon below (1.5x a sidebar tile) instead of
-     independently stretching to fill whatever space is left. */
-  height: calc(((100cqh - 1.2cqh * 3 - 0.8cqh * 2) / 4) * 1.5);
+  /* Grows to fill whatever height is left in .home-main after the fixed-
+     size feature row below, instead of matching that row's (much
+     smaller) height and leaving a big empty gap above the icons. */
+  flex: 1;
+  min-height: 0;
   width: 100%;
   overflow: hidden;
   container-type: size;
@@ -248,6 +250,7 @@ body {
 .features-row {
   display: flex;
   gap: 1.5cqw;
+  flex-shrink: 0;
 }
 .features-row .icon-tile {
   height: calc(((100cqh - 1.2cqh * 3 - 0.8cqh * 2) / 4) * 1.5);
@@ -376,7 +379,9 @@ body {
   flex: 1;
   margin-bottom: 0;
 }
-.settings-nav-btn {
+/* Extra specificity (3 classes vs .master-btn.nav-btn's 2) so this wins
+   over the wider general nav-btn sizing below regardless of source order. */
+.master-btn.nav-btn.settings-nav-btn {
   width: 10cqh;
   height: 10cqh;
   font-size: 4cqh;
@@ -490,11 +495,13 @@ body {
   flex-shrink: 0;
   cursor: pointer;
 }
-/* Page-navigation arrows (next/previous screen) are rounded rectangles
-   on the physical remote, unlike the circular power buttons that share
-   this same base size/color. */
+/* Page-navigation arrows (next/previous screen) are wide rounded
+   rectangles with a big arrow on the physical remote, unlike the
+   circular power buttons that share this same base height/color. */
 .master-btn.nav-btn {
+  width: 35cqh;
   border-radius: 20%;
+  font-size: 9cqh;
 }
 
 .speed-buttons {
@@ -585,8 +592,20 @@ body {
 
 /* Lights: Zones screen - pick a zone on the left, shared color/intensity
    editor on the right, instead of repeating full controls per zone. */
+/* The forward/back arrow sits beside the swatch grid / zone picker,
+   vertically centered against it, instead of trailing below in normal
+   document flow where it could end up far from the content next to a
+   tall Moods/zone-list column. */
+.swatch-grid-row,
+.zone-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 3cqw;
+}
 .zone-picker {
   display: flex;
+  flex: 1;
+  min-width: 0;
   gap: 3cqw;
 }
 .zone-list {
