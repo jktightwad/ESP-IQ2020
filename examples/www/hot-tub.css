@@ -85,7 +85,6 @@ body {
   padding: 0.8cqh;
   flex-shrink: 0;
   background: #0f2436;
-  border-right: 1px solid #1e4a67;
 }
 .app-sidebar.hidden { display: none; }
 /* Compound selector (not just .sidebar-tile) so this reliably beats the
@@ -102,7 +101,11 @@ body {
   border-color: #3f8fe0;
 }
 /* Dims the icon rail (not fully hidden) while a popout covers the rest
-   of Home - "covered so you can tell they're available" per reference. */
+   of Home - "covered so you can tell they're available" per reference -
+   and, while open, actually blocks clicks on the tiles underneath it
+   (only the popout's own collapse arrow should be able to dismiss it).
+   pointer-events stays "none" while closed so it never intercepts
+   normal sidebar taps at rest. */
 .app-sidebar-scrim {
   position: absolute;
   inset: 0;
@@ -111,7 +114,10 @@ body {
   pointer-events: none;
   transition: opacity 0.2s ease-out;
 }
-.app-sidebar.popout-open .app-sidebar-scrim { opacity: 1; }
+.app-sidebar.popout-open .app-sidebar-scrim {
+  opacity: 1;
+  pointer-events: auto;
+}
 
 .app-content {
   flex: 1;
@@ -1014,13 +1020,13 @@ body {
   top: 50%;
   left: 1cqh;
   transform: translateY(-50%);
-  width: 6cqh;
-  height: 10cqh;
+  width: 12cqh;
+  height: 18cqh;
   border-radius: 15%;
   border: none;
   background: #0f2436;
   color: #fff;
-  font-size: 3.4cqh;
+  font-size: 7cqh;
   align-items: center;
   justify-content: center;
   cursor: pointer;
@@ -1036,14 +1042,16 @@ body {
 .home-popout-btn {
   /* % of .home-popout's own content box, not cqw (which would resolve
      against #screen-home's, a different and much wider reference,
-     making the buttons render far wider than the popout they're in). */
-  width: 58%;
-  padding: 3cqh 0;
+     making the buttons render far wider than the popout they're in).
+     Sized to stay under ~2x the "Memory:"/"Clean Cycle:" label's own
+     width, not an arbitrary fraction of the popout. */
+  width: 32%;
+  padding: 2.4cqh 0;
   border-radius: 1.4cqh;
   border: 1px solid #3f8fe0;
   background: #1f6fa8;
   color: #fff;
-  font-size: 4.2cqh;
+  font-size: 5.4cqh;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
