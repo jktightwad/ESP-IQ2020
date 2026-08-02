@@ -712,12 +712,40 @@ body {
   border-color: #fff;
 }
 
-.now-playing {
-  text-align: center;
-  font-size: 3cqh;
+.now-playing-block {
+  margin-bottom: 1cqh;
+}
+.now-playing-row {
+  font-size: 2.8cqh;
+  color: #eaf2f6;
+  font-weight: 600;
+}
+.now-playing-label {
   color: #9cd0ec;
-  min-height: 1.5cqh;
-  margin: 1cqh 0 2cqh;
+  font-weight: 400;
+  margin-right: 0.6em;
+}
+
+/* Decorative transport row (see the comment at its markup for why these
+   don't do anything) - sized to match the other icon buttons on this
+   screen instead of the default text-button styling. */
+.transport-row {
+  display: flex;
+  gap: 3cqw;
+  margin-bottom: 1.5cqh;
+}
+.transport-btn {
+  width: 8cqh;
+  height: 8cqh;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: #fff;
+  font-size: 3.6cqh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
 }
 
 /* Music screen - power button sits under the OFF banner, on the right.

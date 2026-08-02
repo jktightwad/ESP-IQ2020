@@ -337,9 +337,8 @@
     q("treble-value").textContent = formatSigned(state.treble);
     q("balance-value").textContent = formatSigned(state.balance);
     q("subwoofer-value").textContent = state.subwoofer != null ? state.subwoofer : "--";
-    q("now-playing").textContent = state.songTitle || state.artistName
-      ? (state.songTitle + (state.artistName ? " — " + state.artistName : ""))
-      : "";
+    q("now-playing-song").textContent = state.songTitle || "";
+    q("now-playing-artist").textContent = state.artistName || "";
   }
 
   function formatSigned(v) {
@@ -720,7 +719,20 @@
           '<button class="master-btn music-power-btn" id="music-power-btn">' + POWER_ICON + '</button>' +
         '</div>' +
         '<div class="music-body" id="music-body">' +
-          '<div class="now-playing" id="now-playing"></div>' +
+          '<div class="now-playing-block">' +
+            '<div class="now-playing-row"><span class="now-playing-label">Song:</span><span id="now-playing-song"></span></div>' +
+            '<div class="now-playing-row"><span class="now-playing-label">Artist:</span><span id="now-playing-artist"></span></div>' +
+          '</div>' +
+          // Decorative only - the IQ2020 hardware has no transport-control
+          // mechanism (its "button" datapoints are salt-system maintenance
+          // actions, unrelated to audio), so these can't actually control
+          // playback. Included to match the physical remote's layout.
+          '<div class="transport-row">' +
+            '<span class="transport-btn">⏮</span>' +
+            '<span class="transport-btn">▶</span>' +
+            '<span class="transport-btn">⏸</span>' +
+            '<span class="transport-btn">⏭</span>' +
+          '</div>' +
           '<div class="icon-section-label">Volume</div>' +
           barAdjusterHtml("volume", 10) +
           '<div class="icon-section-label">Source</div>' +
