@@ -398,6 +398,15 @@ body {
   flex: 1;
   margin-bottom: 0;
 }
+/* Settings page 2 - Language row re-uses the Music source-select pill,
+   and the Version string is real (backed by the version text sensor) but
+   isn't part of the reference screen, so it's demoted to a small caption
+   underneath instead of its own labeled row. */
+.settings-version-caption {
+  margin-top: 1.5cqh;
+  font-size: 2.6cqh;
+  color: #5e87a0;
+}
 /* Settings arrows now use the same size as the shared .nav-btn rule
    below (matching the Lights screen's arrows) - the small square
    override here was clipping the wide arrow icon against its corners. */
@@ -880,6 +889,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
+  box-sizing: border-box;
   flex: 1;
   min-width: 0;
   padding: 2.6cqh 3cqw;
@@ -892,42 +903,63 @@ body {
 }
 .source-select svg { width: 1.4em; }
 
-/* Clean cycle / Memory screens */
-.clean-panel {
-  text-align: center;
-  padding-top: 5cqh;
+/* Memory / Clean Cycle - slide-out popouts over the Home screen (the
+   icon rail stays visible behind them, same mechanism as the Music
+   source popout) instead of separate full screens - matches the
+   physical remote, where these are popouts launched from Home, not
+   destinations of their own. Blue-themed like Settings. */
+.home-popout {
+  position: absolute;
+  top: 0;
+  right: -100%;
+  bottom: 0;
+  left: 0;
+  background: radial-gradient(ellipse at top, #2f7fd6, #123249 75%);
+  transition: right 0.2s ease-out;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2.5cqh;
+  padding: 4cqh 8cqw;
 }
-.clean-panel .status {
-  font-size: 3.5cqh;
+.home-popout.open { right: 0; }
+.home-popout-collapse {
+  position: absolute;
+  top: 50%;
+  left: -7cqh;
+  transform: translateY(-50%);
+}
+.home-popout-title {
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 5.5cqh;
+  color: #eaf2f6;
+}
+.home-popout-status {
+  font-size: 3cqh;
   color: #9cd0ec;
-  margin-bottom: 3cqh;
+  margin-top: -1.5cqh;
   min-height: 2.5cqh;
 }
-.start-btn {
-  width: 45cqw;
-  padding: 3.5cqh 0;
-  border-radius: 2cqh;
-  border: none;
-  background: var(--accent, #1f6fa8);
+.home-popout-btn {
+  width: 55cqw;
+  padding: 3cqh 0;
+  border-radius: 1.4cqh;
+  border: 1px solid #3f8fe0;
+  background: #1f6fa8;
   color: #fff;
-  font-size: 4cqh;
-  font-weight: 600;
+  font-size: 4.2cqh;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   cursor: pointer;
 }
-.start-btn.active {
-  background: #1f9d55;
-}
-.start-btn:disabled {
+.home-popout-btn.active { background: #1f9d55; border-color: #26b862; }
+.home-popout-btn:disabled {
   background: #274a5e;
   color: #6a8a9a;
+  border-color: #33566b;
   cursor: not-allowed;
 }
-
-.memory-actions {
-  display: flex;
-  gap: 3cqw;
-  justify-content: center;
-}
-.memory-actions .start-btn { width: 32cqw; }

@@ -80,9 +80,11 @@
     subwoofer: null,
     songTitle: "",
     artistName: "",
-    version: ""
+    version: "",
+    displayBrightness: 8 // 1-8, local-only (no hardware backing) - see setDisplayBrightness()
   };
   LIGHT_ZONES.forEach(function (z) { state.zones[z.key] = { color: null, intensity: null }; });
+  state.displayBrightness = loadDisplayBrightness();
 
   function fToC(f) { return (f - 32) * 5 / 9; }
 
@@ -295,6 +297,29 @@
     renderOnOff("spalock", state.spaLock);
     renderOnOff("summer", state.summerTimer);
     q("settings-version").textContent = state.version || "--";
+    renderBrightness();
+  }
+
+  // Screen brightness has no hardware backing (it's the physical remote's
+  // own backlight) - this dims the browser page itself instead, which is
+  // the closest real equivalent for a web UI. Persisted locally since
+  // there's no server-side entity for it.
+  var DISPLAY_BRIGHTNESS_KEY = "hottub-display-brightness";
+  function loadDisplayBrightness() {
+    var v = parseInt(localStorage.getItem(DISPLAY_BRIGHTNESS_KEY), 10);
+    return (v >= 2 && v <= 8) ? v : 8;
+  }
+  function setDisplayBrightness(v) {
+    v = Math.max(2, Math.min(8, v));
+    state.displayBrightness = v;
+    localStorage.setItem(DISPLAY_BRIGHTNESS_KEY, String(v));
+    renderBrightness();
+  }
+  function renderBrightness() {
+    var v = state.displayBrightness;
+    renderSegmentBar("brightness", v, 8, 8);
+    var app = q("app");
+    if (app) app.style.filter = v >= 8 ? "" : "brightness(" + (0.4 + 0.6 * v / 8) + ")";
   }
 
   function renderOnOff(idPrefix, isOn) {
@@ -513,11 +538,18 @@
   // just its own content plus a Home icon to jump back.
 
   function showScreen(name) {
-    ["home", "temp", "jets", "lights", "lights-zones", "music", "music-detail", "memory", "clean", "settings", "settings-2"].forEach(function (n) {
+    ["home", "temp", "jets", "lights", "lights-zones", "music", "music-detail", "settings", "settings-2"].forEach(function (n) {
       q("screen-" + n).classList.toggle("active", n === name);
     });
     q("app-sidebar").classList.toggle("hidden", name !== "home");
+    if (name !== "home") { closeHomePopout("memory-popout"); closeHomePopout("clean-popout"); }
   }
+
+  // Memory and Clean Cycle are slide-out popouts over the Home screen
+  // (with the icon rail staying visible behind them) rather than separate
+  // full-screen navigations - matches the physical remote.
+  function openHomePopout(id) { q(id).classList.add("open"); }
+  function closeHomePopout(id) { q(id).classList.remove("open"); }
 
   function screenHeaderHtml(title, icon, showHome) {
     if (showHome === undefined) showHome = true;
@@ -606,8 +638,8 @@
       // Sidebar only shows on the Home screen, matching the real remote.
       '<div class="app-sidebar" id="app-sidebar">' +
         '<button class="icon-tile sidebar-tile" id="global-power-btn" title="All off, or jets+lights on if off"><span class="glyph">' + POWER_ICON + '</span></button>' +
-        '<button class="icon-tile sidebar-tile" data-goto="memory"><span class="glyph">' + MEMORY_ICON + '</span></button>' +
-        '<button class="icon-tile sidebar-tile" data-goto="clean"><span class="glyph">' + CLEAN_ICON + '</span></button>' +
+        '<button class="icon-tile sidebar-tile" data-open-popout="memory-popout"><span class="glyph">' + MEMORY_ICON + '</span></button>' +
+        '<button class="icon-tile sidebar-tile" data-open-popout="clean-popout"><span class="glyph">' + CLEAN_ICON + '</span></button>' +
         '<button class="icon-tile sidebar-tile" data-goto="settings"><span class="glyph">⚙️</span></button>' +
       '</div>' +
       '<div class="app-content">' +
@@ -626,6 +658,19 @@
             '<div class="icon-tile feature-music" id="tile-music" data-goto="music"><span class="glyph">🎵</span></div>' +
             '<div class="icon-tile feature-lights" id="tile-lights" data-goto="lights"><span class="glyph">💡</span></div>' +
           '</div>' +
+        '</div>' +
+        '<div class="home-popout" id="memory-popout">' +
+          '<button class="master-btn nav-btn home-popout-collapse" data-close-popout="memory-popout">' + ARROW_LEFT_ICON + '</button>' +
+          '<div class="home-popout-title">Memory:</div>' +
+          '<div class="home-popout-status" id="memory-status"></div>' +
+          '<button class="home-popout-btn" id="memory-restore-btn">Restore</button>' +
+          '<button class="home-popout-btn" id="memory-save-btn">Save</button>' +
+        '</div>' +
+        '<div class="home-popout" id="clean-popout">' +
+          '<button class="master-btn nav-btn home-popout-collapse" data-close-popout="clean-popout">' + ARROW_LEFT_ICON + '</button>' +
+          '<div class="home-popout-title">Clean Cycle:</div>' +
+          '<button class="home-popout-btn" id="clean-start-btn">Start</button>' +
+          '<div class="home-popout-status" id="clean-status"></div>' +
         '</div>' +
       '</div>' +
 
@@ -765,24 +810,6 @@
         '</div>' +
       '</div>' +
 
-      '<div class="screen" id="screen-memory">' +
-        screenHeaderHtml("Memory", MEMORY_ICON) +
-        '<div class="clean-panel">' +
-          '<div class="status" id="memory-status"></div>' +
-          '<div class="memory-actions">' +
-            '<button class="start-btn" id="memory-save-btn">Save</button>' +
-            '<button class="start-btn" id="memory-restore-btn">Restore</button>' +
-          '</div>' +
-        '</div>' +
-      '</div>' +
-
-      '<div class="screen" id="screen-clean">' +
-        screenHeaderHtml("Clean Cycle", CLEAN_ICON) +
-        '<div class="clean-panel">' +
-          '<div class="status" id="clean-status"></div>' +
-          '<button class="start-btn" id="clean-start-btn">Start</button>' +
-        '</div>' +
-      '</div>' +
 
       '<div class="screen" id="screen-settings">' +
         screenHeaderHtml("Settings", "⚙️") +
@@ -800,12 +827,30 @@
 
       '<div class="screen" id="screen-settings-2">' +
         screenHeaderHtml("Settings", "⚙️") +
+        '<div class="setting-group">' +
+          '<div class="setting-row">' +
+            '<div class="speed-buttons">' +
+              '<button class="speed-btn on" disabled title="This build is Fahrenheit-only">°F</button>' +
+              '<button class="speed-btn" disabled title="This build is Fahrenheit-only">°C</button>' +
+            '</div>' +
+            '<span class="setting-label">Temperature</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="setting-group">' +
+          '<div class="setting-row">' +
+            '<div class="speed-buttons">' +
+              '<button class="speed-btn on" id="settings-brightness-auto" title="Reset screen brightness">AUTO</button>' +
+            '</div>' +
+            '<span class="setting-label">Brightness</span>' +
+          '</div>' +
+          barAdjusterHtml("brightness", 8) +
+        '</div>' +
         '<div class="setting-group-row">' +
           '<div class="setting-group">' +
-            '<div class="setting-row">' +
-              '<span class="setting-value" id="settings-version">--</span>' +
-              '<span class="setting-label">Version</span>' +
-            '</div>' +
+            '<button class="source-select" disabled title="Only English is available">' +
+              '<span>English</span>' + ARROW_RIGHT_ICON +
+            '</button>' +
+            '<div class="settings-version-caption">Version <span id="settings-version">--</span></div>' +
           '</div>' +
           '<button class="master-btn nav-btn settings-nav-btn" data-goto="settings">' + ARROW_LEFT_ICON + '</button>' +
         '</div>' +
@@ -819,6 +864,12 @@
     // Navigation
     document.querySelectorAll("[data-goto]").forEach(function (el) {
       el.addEventListener("click", function () { showScreen(el.getAttribute("data-goto")); });
+    });
+    document.querySelectorAll("[data-open-popout]").forEach(function (el) {
+      el.addEventListener("click", function () { openHomePopout(el.getAttribute("data-open-popout")); });
+    });
+    document.querySelectorAll("[data-close-popout]").forEach(function (el) {
+      el.addEventListener("click", function () { closeHomePopout(el.getAttribute("data-close-popout")); });
     });
     q("home-dial").addEventListener("click", function () { showScreen("temp"); });
     q("global-power-btn").addEventListener("click", globalPowerToggle);
@@ -945,10 +996,18 @@
         el.addEventListener("click", function () { stepNumber(id, state[id], 1, range.min, range.max); });
       });
     });
+    document.querySelectorAll("[data-adj-down='brightness']").forEach(function (el) {
+      el.addEventListener("click", function () { setDisplayBrightness(state.displayBrightness - 1); });
+    });
+    document.querySelectorAll("[data-adj-up='brightness']").forEach(function (el) {
+      el.addEventListener("click", function () { setDisplayBrightness(state.displayBrightness + 1); });
+    });
+    q("settings-brightness-auto").addEventListener("click", function () { setDisplayBrightness(8); });
   }
 
   document.addEventListener("DOMContentLoaded", function () {
     buildPage();
+    renderBrightness();
     refresh();
     connectLiveUpdates();
     // Slow safety-net poll in case an SSE event is ever missed - live
