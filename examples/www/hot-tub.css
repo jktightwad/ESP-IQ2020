@@ -113,7 +113,7 @@ body {
   container-type: size;
 }
 .screen.active { display: block; }
-#screen-home.active { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5cqh; }
+#screen-home.active { display: flex; flex-direction: column; align-items: center; gap: 1.5cqh; }
 #screen-temp.active { display: flex; flex-direction: column; }
 
 /* Per-screen accent colors, matching the real remote (Jets = purple,
@@ -192,15 +192,20 @@ body {
   color: #fff;
 }
 
-/* Temp tile + feature row are grouped in one fit-content-width block so
-   they share the exact same width and sit centered as a unit (matching
-   the physical remote's proportions) instead of each independently
-   stretching to fill the whole screen. */
+/* Temp tile + feature row share the exact same width (fit-content) and
+   sit centered horizontally as a unit, matching the physical remote's
+   proportions, instead of each independently stretching edge to edge.
+   Vertically this block fills the full screen height (flex:1) with
+   justify-content:space-between, so the temp tile sits at the very top
+   and the feature row at the very bottom - matching the reference photo
+   - instead of the pair floating centered with empty margin above/below. */
 .home-main {
   display: flex;
   flex-direction: column;
-  gap: 1cqh;
+  justify-content: space-between;
   width: fit-content;
+  flex: 1;
+  min-height: 0;
 }
 
 /* overflow:hidden + a font-size well past 100cqh is deliberate: a font's
@@ -388,16 +393,16 @@ body {
   display: flex;
   align-items: center;
   gap: 2cqw;
-  margin-bottom: 4cqh;
+  margin-bottom: 5cqh;
 }
 .jets-rows-col .jets-row:last-child { margin-bottom: 0; }
 .row-number-text {
-  width: 11cqh;
-  height: 11cqh;
+  width: 27.5cqh;
+  height: 27.5cqh;
   border-radius: 50%;
   background: var(--accent-soft, #14384f);
   color: #fff;
-  font-size: 4.5cqh;
+  font-size: 11cqh;
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -459,12 +464,14 @@ body {
   flex-direction: column;
   gap: 1.5cqh;
   flex-shrink: 0;
+  padding: 0 2.5cqw;
 }
 .lights-main { flex: 1; min-width: 0; }
 .mood-btn {
   aspect-ratio: 1;
   width: auto;
   height: calc((100cqh - 24cqh - (1.5cqh * 3)) / 4);
+  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -487,6 +494,18 @@ body {
 .all-lights-header-row .icon-section-label { margin: 0; }
 .all-lights-top-row {
   margin-bottom: 2cqh;
+}
+/* The brightness adjuster was much smaller than the space available next
+   to it - enlarge it specifically here (Music's volume bar is untouched). */
+.all-lights-top-row .adjuster-pill {
+  padding: 1.8cqh 2.5cqw;
+}
+.all-lights-top-row .segment {
+  width: 3cqw;
+  height: 6cqh;
+}
+.all-lights-top-row .chev {
+  font-size: 5cqh;
 }
 #alllights-power.on { background: #1f9d55; }
 
@@ -539,18 +558,21 @@ body {
 .zone-editor .adjuster-pill { margin-bottom: 2cqh; }
 
 /* Color swatches (lights) - a 4-column grid of square swatches, matching
-   the manual's color picker grid. Sized from the screen's height (cqh)
-   so they scale with the display instead of a small fixed pixel size. */
+   the manual's color picker grid. Sized to use up the remaining height
+   in the All Lights column (after the header row, adjuster and advance
+   button are accounted for) instead of a small fixed size that leaves a
+   lot of empty space around it. */
 .swatch-grid {
   display: grid;
-  grid-template-columns: repeat(4, 9cqh);
-  gap: 1.5cqw;
+  grid-template-columns: repeat(4, 19cqh);
+  column-gap: 1.5cqw;
+  row-gap: 1.5cqh;
   margin-bottom: 2cqh;
 }
 .color-swatch {
-  width: 9cqh;
-  height: 9cqh;
-  border-radius: 8px;
+  width: 19cqh;
+  height: 19cqh;
+  border-radius: 10px;
   border: 2px solid transparent;
   cursor: pointer;
 }
