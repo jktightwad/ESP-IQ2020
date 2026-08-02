@@ -51,14 +51,15 @@ html, body {
   }
 }
 
-/* Sidebar icons stack to fill the whole screen height edge-to-edge, like
-   the physical remote's own icon column, rather than sitting as small
-   fixed-size squares with wasted space above/below. */
+/* Sidebar icons are square (like the physical remote's), sized from the
+   column's width, then spread out with justify-content to use the full
+   column height without stretching into rectangles. */
 .app-sidebar {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   gap: 8px;
-  width: 64px;
+  width: 84px;
   flex-shrink: 0;
   padding: 8px;
   background: #0f2436;
@@ -66,12 +67,10 @@ html, body {
 }
 .app-sidebar.hidden { display: none; }
 .sidebar-tile {
-  flex: 1;
+  flex: none;
   width: 100%;
-  min-height: 0;
   padding: 0;
 }
-.sidebar-tile .glyph { margin: 0; font-size: clamp(20px, 5vh, 28px); }
 
 .app-content {
   flex: 1;
@@ -164,36 +163,47 @@ html, body {
   flex: 1;
   min-height: 0;
   width: 100%;
+  container-type: size;
   border-radius: 18px;
   background: radial-gradient(circle at 35% 30%, #1f6fa8, #0f3350 70%);
   border: 4px solid #2a80b8;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   cursor: pointer;
 }
 .temp-tile .value {
-  font-size: clamp(40px, 12vh, 90px);
+  font-size: 55cqh;
   font-weight: 600;
   line-height: 1;
 }
 .temp-tile .unit {
-  font-size: clamp(16px, 4vh, 28px);
+  font-size: 16cqh;
   color: #9cd0ec;
 }
 
+/* Feature icons are square, sized from the row's height (the row is
+   short and wide, the opposite of the sidebar column) and spread across
+   the full width instead of stretching into short wide rectangles. */
 .features-row {
   display: flex;
   flex: 1;
   min-height: 0;
+  justify-content: space-evenly;
   gap: 10px;
   width: 100%;
 }
+.features-row .icon-tile {
+  height: 100%;
+  width: auto;
+}
 
+/* Every icon tile (sidebar or feature) is a square, and its icon/emoji
+   scales to fill most of that square via container query units instead
+   of a small fixed-size glyph with a lot of empty space around it. */
 .icon-tile {
-  flex: 1;
-  min-height: 0;
+  aspect-ratio: 1;
+  container-type: size;
   background: #123249;
   border: 1px solid #1e4a67;
   border-radius: 14px;
@@ -202,7 +212,7 @@ html, body {
   justify-content: center;
   cursor: pointer;
 }
-.icon-tile .glyph { font-size: clamp(24px, 6vh, 40px); display: block; }
+.icon-tile .glyph { font-size: 60cqmin; display: flex; align-items: center; justify-content: center; }
 .icon-tile.active { background: var(--accent, #1f6fa8); }
 .icon-tile.feature-jets { --accent: #a855f7; border-color: #4a2a6b; }
 .icon-tile.feature-music { --accent: #22c55e; border-color: #1e5c36; }
