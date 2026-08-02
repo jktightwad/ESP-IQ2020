@@ -111,6 +111,7 @@ body {
   padding: 2.5cqh 3cqw;
   display: none;
   container-type: size;
+  position: relative;
 }
 .screen.active { display: block; }
 #screen-home.active { display: flex; flex-direction: column; align-items: center; gap: 1.5cqh; }
@@ -135,15 +136,15 @@ body {
   margin-bottom: 2cqh;
 }
 .home-btn {
-  width: 22cqh;
-  height: 22cqh;
+  width: 16cqh;
+  height: 16cqh;
   border-radius: 20%;
   background: #123249;
   border: 1px solid #1e4a67;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11cqh;
+  font-size: 8cqh;
   cursor: pointer;
   flex-shrink: 0;
 }
@@ -581,23 +582,19 @@ body {
 }
 .mood-btn:active { background: var(--accent, #1f6fa8); }
 
-/* flex-start (not center) so "All Lights" lines up with "Moods" above -
-   centering it against the taller Power button pushed the text down. */
-/* position:relative + the button being position:absolute means the
-   button's size no longer affects this row's own height - previously a
-   flex row with the button as a normal flex item, so a big button made
-   the whole row tall and pushed the swatch grid down/off-screen. The
-   row's margin-bottom accounts for how far the button (taller than the
-   row itself) hangs below it, so it doesn't overlap the swatch grid. */
+/* flex-start (not center) so "All Lights" lines up with "Moods" above. */
 .all-lights-header-row {
-  position: relative;
-  margin-bottom: 12cqh;
+  margin-bottom: 1.5cqh;
 }
 .all-lights-header-row .icon-section-label { margin: 0; }
+/* Anchored to the screen itself (sharing the header's own vertical
+   space, top-right corner) instead of any content row - that's the only
+   way its size truly has zero effect on where other rows sit, rather
+   than just moving the coupling into a margin that has to track it. */
 #alllights-power {
   position: absolute;
-  top: 0;
-  right: 0;
+  top: 2.5cqh;
+  right: 3cqw;
   width: 16cqh;
   height: 16cqh;
   font-size: 7cqh;
@@ -729,8 +726,7 @@ body {
    flex item before, so its size pushed Volume/Source down) - the row's
    margin-bottom accounts for how far the button hangs below it instead. */
 .music-power-row {
-  position: relative;
-  margin-bottom: 14cqh;
+  margin-bottom: 1.5cqh;
 }
 .music-status {
   display: block;
@@ -741,13 +737,41 @@ body {
   color: #9cd0ec;
   letter-spacing: 0.08em;
 }
+/* Anchored to the screen itself (sharing the header's own vertical
+   space, top-right corner) instead of any content row - same fix as
+   the Lights screen's power button, for the same reason. */
 .music-power-btn {
   position: absolute;
-  top: 0;
-  right: 0;
+  top: 2.5cqh;
+  right: 3cqw;
   width: 18cqh;
   height: 18cqh;
   font-size: 8cqh;
+}
+
+/* The volume bar and Bass/Treble/Balance/Subwoofer rows were using the
+   small default adjuster-pill/chev sizing (tuned for compact contexts),
+   which looked tiny and out of proportion next to the rest of the Music
+   screen and its own row labels - scale them up to match. */
+.music-body .adjuster-pill {
+  padding: 2.2cqh 2.5cqw;
+}
+.music-body .segment {
+  width: 3cqw;
+  height: 7cqh;
+}
+.music-body .chev {
+  font-size: 6cqh;
+}
+#screen-music-detail .adjuster-pill {
+  padding: 1.5cqh 2.5cqw;
+}
+#screen-music-detail .chev {
+  font-size: 4.5cqh;
+}
+#screen-music-detail .adjuster-value {
+  font-size: 4.5cqh;
+  min-width: 8cqw;
 }
 
 /* A real popout panel for source selection (matching the manual), not
@@ -815,12 +839,12 @@ body {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 1.8cqh 3cqw;
+  padding: 2.6cqh 3cqw;
   border: none;
   border-radius: 1.2cqh;
   background: var(--accent, #1f6fa8);
   color: #fff;
-  font-size: 3.2cqh;
+  font-size: 4.2cqh;
   cursor: pointer;
 }
 .source-select svg { width: 1.4em; }
