@@ -13,8 +13,8 @@ html, body {
    #app to that same ratio and centering it (letterboxing any leftover
    space) means every screen's internal proportions look right regardless
    of the actual device's aspect ratio, instead of stretching to whatever
-   shape the browser window happens to be. container-type:size lets the
-   sidebar below measure itself against #app's real rendered box (cqh)
+   shape the browser window happens to be. container-type:size lets
+   descendants measure themselves against a real rendered box (cqh/cqw)
    instead of the raw viewport - raw vw/vh would be wrong here since the
    landscape-rotation trick further down swaps what's actually visible
    relative to the true (portrait) viewport. */
@@ -25,9 +25,9 @@ body {
   container-type: size;
 }
 
-/* Top-level layout: a persistent icon sidebar on the left (Power/Clean
-   Cycle/Settings - present on every screen, matching the physical remote)
-   plus a content area on the right holding the swappable screens. */
+/* Top-level layout: a persistent icon sidebar on the left (Power/Memory/
+   Clean Cycle/Settings - shown on the Home screen, matching the physical
+   remote) plus a content area on the right holding the swappable screens. */
 #app {
   display: flex;
   flex-direction: row;
@@ -68,25 +68,24 @@ body {
   }
 }
 
-/* Sidebar icons are square (like the physical remote's). The column is
-   sized from #app's own height (via cqh, not the viewport) so the 4
-   squares scale to actually fill the column edge-to-edge no matter what
-   shape #app itself ends up being. */
+/* Sidebar icons are square (like the physical remote's) and their size is
+   computed to exactly fill the column's height edge-to-edge: each tile's
+   height is (100% minus the 3 gaps and top/bottom padding) / 4, instead
+   of guessing a width and hoping leftover space distributes evenly. */
 .app-sidebar {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   gap: 1.2cqh;
-  width: 22cqh;
+  padding: 0.8cqh;
   flex-shrink: 0;
-  padding: 1cqh;
   background: #0f2436;
   border-right: 1px solid #1e4a67;
 }
 .app-sidebar.hidden { display: none; }
 .sidebar-tile {
   flex: none;
-  width: 100%;
+  width: auto;
+  height: calc((100cqh - 1.2cqh * 3 - 0.8cqh * 2) / 4);
   padding: 0;
 }
 
@@ -99,23 +98,29 @@ body {
   position: relative;
 }
 
+/* container-type:size here is what lets every screen's own descendants
+   (headers, rows, buttons, swatches...) size themselves as a proportion
+   of that screen's real height/width (cqh/cqw) instead of fixed pixel
+   values, so everything scales up or down to actually fill the screen
+   rather than sitting tiny in a corner or overflowing off it. */
 .screen {
   flex: 1;
   overflow-y: auto;
-  padding: 16px 20px 12px;
+  padding: 2.5cqh 3cqw;
   display: none;
+  container-type: size;
 }
 .screen.active { display: block; }
-#screen-home.active { display: flex; flex-direction: column; padding: 10px 12px; gap: 8px; }
+#screen-home.active { display: flex; flex-direction: column; gap: 1.5cqh; }
 #screen-temp.active { display: flex; flex-direction: column; }
 
 /* Per-screen accent colors, matching the real remote (Jets = purple,
    Lights = red, Music = green). Interactive elements below reference
    var(--accent) with a blue fallback, so screens without an override
    keep the default theme automatically. */
-#screen-jets { --accent: #a855f7; --accent-soft: #3b1064; background: radial-gradient(ellipse at top, #4c1d95, #1e0a3c 75%); margin: 0 -20px; padding-left: 20px; padding-right: 20px; }
-#screen-lights, #screen-lights-zones { --accent: #ef4444; --accent-soft: #5c1414; background: radial-gradient(ellipse at top, #7f1d1d, #2a0a0a 75%); margin: 0 -20px; padding-left: 20px; padding-right: 20px; }
-#screen-music, #screen-music-detail { --accent: #22c55e; --accent-soft: #14401f; background: radial-gradient(ellipse at top, #14532d, #06210f 75%); margin: 0 -20px; padding-left: 20px; padding-right: 20px; }
+#screen-jets { --accent: #a855f7; --accent-soft: #3b1064; background: radial-gradient(ellipse at top, #4c1d95, #1e0a3c 75%); }
+#screen-lights, #screen-lights-zones { --accent: #ef4444; --accent-soft: #5c1414; background: radial-gradient(ellipse at top, #7f1d1d, #2a0a0a 75%); }
+#screen-music, #screen-music-detail { --accent: #22c55e; --accent-soft: #14401f; background: radial-gradient(ellipse at top, #14532d, #06210f 75%); }
 
 /* Every non-Home screen has this header instead of a persistent tab bar
    - matches the remote's own navigation, where each screen is full-
@@ -123,34 +128,42 @@ body {
 .screen-header {
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin-bottom: 18px;
+  gap: 2cqw;
+  margin-bottom: 2cqh;
 }
 .home-btn {
-  width: 40px;
-  height: 40px;
+  width: 11cqh;
+  height: 11cqh;
   border-radius: 50%;
   background: #123249;
   border: 1px solid #1e4a67;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: 5.5cqh;
   cursor: pointer;
   flex-shrink: 0;
 }
+.header-icon {
+  font-size: 6cqh;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  color: #cfe8f7;
+  flex-shrink: 0;
+}
 .header-title {
-  font-size: 15px;
+  font-size: 5cqh;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #6fb3d2;
 }
 .icon-section-label {
-  font-size: 12px;
+  font-size: 3.2cqh;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: #7fa8bf;
-  margin: 4px 0 10px;
+  margin: 0.5cqh 0 1.5cqh;
 }
 
 /* Home screen - the temperature tile and the feature row below it split
@@ -161,14 +174,14 @@ body {
 .status-row {
   display: flex;
   justify-content: center;
-  gap: 18px;
+  gap: 3cqw;
   flex: 0 0 auto;
   min-height: 0;
 }
 .status-badge {
-  font-size: 12px;
-  padding: 4px 10px;
-  border-radius: 12px;
+  font-size: 2.6cqh;
+  padding: 0.8cqh 2cqw;
+  border-radius: 2cqh;
   background: #14384f;
   color: #6fb3d2;
 }
@@ -177,10 +190,16 @@ body {
   color: #fff;
 }
 
+/* overflow:hidden + a font-size well past 100cqh is deliberate: a font's
+   nominal size includes invisible ascender/descender space beyond the
+   visible glyph, so "100cqh" alone still leaves visible padding above
+   and below the digits. Oversizing and clipping the invisible overflow
+   is what actually gets the numerals to reach the top/bottom edges. */
 .temp-tile {
   flex: 1;
   min-height: 0;
   width: 100%;
+  overflow: hidden;
   container-type: size;
   border-radius: 18px;
   background: radial-gradient(circle at 35% 30%, #1f6fa8, #0f3350 70%);
@@ -191,12 +210,12 @@ body {
   cursor: pointer;
 }
 .temp-tile .value {
-  font-size: 88cqh;
-  font-weight: 600;
+  font-size: 135cqh;
+  font-weight: 700;
   line-height: 1;
 }
 .temp-tile .unit {
-  font-size: 22cqh;
+  font-size: 30cqh;
   color: #9cd0ec;
 }
 
@@ -208,7 +227,7 @@ body {
   flex: 1;
   min-height: 0;
   justify-content: space-evenly;
-  gap: 10px;
+  gap: 1.5cqw;
   width: 100%;
 }
 .features-row .icon-tile {
@@ -248,26 +267,26 @@ body {
 .temp-adjust {
   display: flex;
   align-items: center;
-  gap: 36px;
+  gap: 6cqw;
 }
 .temp-adjust .target {
-  font-size: 120px;
+  font-size: 45cqh;
   font-weight: 700;
   line-height: 1;
 }
 .step-buttons {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 3cqh;
 }
 .step-btn {
-  width: 68px;
-  height: 68px;
+  width: 18cqh;
+  height: 18cqh;
   border-radius: 50%;
   border: none;
   background: var(--accent, #1f6fa8);
   color: #fff;
-  font-size: 30px;
+  font-size: 8cqh;
   cursor: pointer;
 }
 .step-btn:disabled {
@@ -276,7 +295,7 @@ body {
   cursor: not-allowed;
 }
 .range-note {
-  font-size: 12px;
+  font-size: 2.5cqh;
   color: #7fa8bf;
   text-align: center;
 }
@@ -286,17 +305,17 @@ body {
 .setting-row {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 10px 0;
+  gap: 2cqw;
+  padding: 1.5cqh 0;
   border-bottom: 1px solid #1e4a67;
 }
 .setting-label {
-  font-size: 14px;
+  font-size: 3.2cqh;
   color: #cfe8f7;
   flex: 1;
 }
-.setting-row .speed-buttons { flex: none; gap: 6px; }
-.setting-row .speed-btn { flex: none; padding: 8px 16px; }
+.setting-row .speed-buttons { flex: none; gap: 1cqw; }
+.setting-row .speed-btn { flex: none; padding: 1.2cqh 3cqw; }
 
 /* Chevron/segmented-bar and chevron/number adjusters, used for brightness,
    volume, and Bass/Treble/Balance/Subwoofer - matches the manual's
@@ -304,53 +323,68 @@ body {
 .adjuster-pill {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 1.5cqw;
   background: #123249;
   border: 1px solid #1e4a67;
-  border-radius: 24px;
-  padding: 8px 14px;
+  border-radius: 3cqh;
+  padding: 1cqh 2cqw;
+  width: fit-content;
 }
 .chev {
   background: none;
   border: none;
   color: var(--accent, #6fb3d2);
-  font-size: 16px;
-  padding: 4px 6px;
+  font-size: 3.2cqh;
+  padding: 0.5cqh 1cqw;
   cursor: pointer;
 }
 .segment-bar {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 0.8cqw;
   flex: 1;
 }
 .segment {
-  width: 14px;
-  height: 18px;
+  width: 2.2cqw;
+  height: 3.2cqh;
   border-radius: 3px;
   background: #274a5e;
 }
 .segment.filled { background: var(--accent, #1f6fa8); }
 .adjuster-value {
-  min-width: 34px;
+  min-width: 6cqw;
   text-align: center;
-  font-size: 16px;
+  font-size: 3.2cqh;
 }
 
-/* Jets screen */
+/* Jets screen - the power button sits to the right of both rows (like
+   the physical remote), vertically centered, instead of below them. */
+.jets-layout {
+  display: flex;
+  align-items: center;
+  gap: 3cqw;
+}
+.jets-rows-col {
+  flex: 1;
+  min-width: 0;
+}
+.jets-master-col {
+  flex-shrink: 0;
+}
 .jets-row {
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin-bottom: 20px;
+  gap: 2cqw;
+  margin-bottom: 3cqh;
 }
+.jets-rows-col .jets-row:last-child { margin-bottom: 0; }
 .row-number-text {
-  width: 28px;
-  height: 28px;
+  width: 5cqh;
+  height: 5cqh;
   border-radius: 50%;
   background: var(--accent-soft, #14384f);
   color: #fff;
-  font-size: 14px;
+  font-size: 2.5cqh;
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -358,37 +392,33 @@ body {
   flex-shrink: 0;
 }
 .jets-row .speed-buttons { flex: 1; }
-.jets-master-row {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 8px;
-}
 .master-btn {
-  width: 68px;
-  height: 68px;
+  width: 14cqh;
+  height: 14cqh;
   border-radius: 50%;
   border: none;
   background: var(--accent, #1f6fa8);
   color: #fff;
-  font-size: 22px;
+  font-size: 5cqh;
+  flex-shrink: 0;
   cursor: pointer;
 }
 
 .speed-buttons {
   display: flex;
-  gap: 10px;
+  gap: 1.5cqw;
 }
 .speed-btn {
   flex: 1;
-  padding: 14px 0;
-  border-radius: 10px;
+  padding: 1.8cqh 0;
+  border-radius: 1.2cqh;
   border: 1px solid #1e4a67;
   background: #123249;
   color: #eaf2f6;
-  font-size: 14px;
+  font-size: 2.8cqh;
   cursor: pointer;
 }
-.speed-btn.icon-only { font-size: 18px; }
+.speed-btn.icon-only { font-size: 4cqh; }
 .speed-btn.on {
   background: var(--accent, #1f6fa8);
   border-color: var(--accent, #2a80b8);
@@ -396,21 +426,25 @@ body {
 
 /* Lights screen: Moods is a persistent left column (like the real
    remote's layout), main content (All Lights) on the right, rather than
-   everything stacked in one vertical flow. */
+   everything stacked in one vertical flow. Mood buttons are square,
+   sized from the column's available height (not a guessed width) so the
+   column itself shrinks to fit them instead of leaving a wide empty
+   gutter next to narrower square buttons. */
 .lights-layout {
   display: flex;
-  gap: 16px;
+  gap: 3cqw;
 }
 .moods-col {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  width: 17%;
+  gap: 1.5cqh;
   flex-shrink: 0;
 }
 .lights-main { flex: 1; min-width: 0; }
 .mood-btn {
-  height: 48px;
+  aspect-ratio: 1;
+  width: auto;
+  height: calc((100cqh - 24cqh - (1.5cqh * 3)) / 4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -418,7 +452,7 @@ body {
   border: 1px solid #5c1414;
   background: rgba(0,0,0,0.2);
   color: #fff;
-  font-size: 16px;
+  font-size: 4cqh;
   font-weight: 600;
   cursor: pointer;
 }
@@ -428,42 +462,42 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 8px;
+  margin-bottom: 1.5cqh;
 }
 .all-lights-header-row .icon-section-label { margin: 0; }
 .all-lights-top-row {
-  margin-bottom: 10px;
+  margin-bottom: 2cqh;
 }
 #alllights-power.on { background: #1f9d55; }
 
 .advance-row {
   display: flex;
   justify-content: flex-end;
-  margin-top: 8px;
+  margin-top: 1.5cqh;
 }
 
 /* Lights: Zones screen - pick a zone on the left, shared color/intensity
    editor on the right, instead of repeating full controls per zone. */
 .zone-picker {
   display: flex;
-  gap: 16px;
+  gap: 3cqw;
 }
 .zone-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  width: 130px;
+  gap: 1.2cqh;
+  width: 20cqw;
   flex-shrink: 0;
 }
 .zone-btn {
   display: flex;
   align-items: center;
-  padding: 8px 8px;
+  padding: 1.5cqh 1.5cqw;
   border-radius: 8px;
   border: 1px solid #1e4a67;
   background: #123249;
   color: #eaf2f6;
-  font-size: 12px;
+  font-size: 2.8cqh;
   text-align: left;
   cursor: pointer;
 }
@@ -473,75 +507,30 @@ body {
 }
 .zone-color-preview {
   display: inline-block;
-  width: 12px;
-  height: 12px;
+  width: 2.2cqh;
+  height: 2.2cqh;
   border-radius: 50%;
-  margin-right: 6px;
+  margin-right: 1cqw;
   flex-shrink: 0;
   background: #555;
   border: 1px solid rgba(255,255,255,0.3);
 }
 .zone-editor { flex: 1; }
-.zone-editor .adjuster-pill { margin-bottom: 10px; }
-
-/* The bar-adjuster is a flex container itself, but that doesn't stop the
-   div from being block-level and stretching to fill the row - without an
-   explicit width it fills the entire remaining screen width, which looked
-   badly stretched next to the small swatch grid below it. Keep it sized
-   to its own content instead, like the manual's compact pill control. */
-.all-lights-top-row .adjuster-pill,
-.zone-editor .adjuster-pill {
-  width: fit-content;
-}
-
-/* Lights & Lights:Zones are the most content-dense screens - the whole
-   remote's screen is short (landscape phones, and the real Spa Control
-   panel itself), so these get tighter spacing/sizing than other screens
-   to actually fit without scrolling. */
-#screen-lights, #screen-lights-zones {
-  padding-top: 10px;
-  padding-bottom: 8px;
-}
-#screen-lights .screen-header, #screen-lights-zones .screen-header {
-  margin-bottom: 8px;
-}
-#screen-lights .icon-section-label, #screen-lights-zones .icon-section-label {
-  margin: 0 0 6px;
-}
-#screen-lights .master-btn, #screen-lights-zones .master-btn {
-  width: 40px;
-  height: 40px;
-  flex-shrink: 0;
-}
-#screen-lights .master-btn svg, #screen-lights-zones .master-btn svg {
-  width: 16px;
-  height: 16px;
-}
-#screen-lights .adjuster-pill, #screen-lights-zones .adjuster-pill {
-  padding: 6px 10px;
-}
-#screen-lights .segment, #screen-lights-zones .segment {
-  width: 10px;
-  height: 14px;
-}
-#screen-lights .speed-buttons .speed-btn, #screen-lights-zones .speed-buttons .speed-btn {
-  padding: 6px 0;
-  font-size: 12px;
-}
+.zone-editor .adjuster-pill { margin-bottom: 2cqh; }
 
 /* Color swatches (lights) - a 4-column grid of square swatches, matching
-   the manual's color picker grid. Fixed pixel size (not 1fr columns) so
-   they stay small tiles instead of stretching to fill a wide screen. */
+   the manual's color picker grid. Sized from the screen's height (cqh)
+   so they scale with the display instead of a small fixed pixel size. */
 .swatch-grid {
   display: grid;
-  grid-template-columns: repeat(4, 26px);
-  gap: 8px;
-  margin-bottom: 10px;
+  grid-template-columns: repeat(4, 9cqh);
+  gap: 1.5cqw;
+  margin-bottom: 2cqh;
 }
 .color-swatch {
-  width: 26px;
-  height: 26px;
-  border-radius: 6px;
+  width: 9cqh;
+  height: 9cqh;
+  border-radius: 8px;
   border: 2px solid transparent;
   cursor: pointer;
 }
@@ -551,10 +540,10 @@ body {
 
 .now-playing {
   text-align: center;
-  font-size: 14px;
+  font-size: 3cqh;
   color: #9cd0ec;
-  min-height: 18px;
-  margin: 4px 0 16px;
+  min-height: 1.5cqh;
+  margin: 1cqh 0 2cqh;
 }
 
 /* Music screen */
@@ -562,34 +551,34 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 20px;
-  margin-bottom: 16px;
+  gap: 3cqw;
+  margin-bottom: 2cqh;
 }
 .music-status {
-  font-size: 14px;
+  font-size: 3cqh;
   color: #9cd0ec;
   letter-spacing: 0.08em;
 }
 
-/* Clean cycle screen */
+/* Clean cycle / Memory screens */
 .clean-panel {
   text-align: center;
-  padding-top: 40px;
+  padding-top: 5cqh;
 }
 .clean-panel .status {
-  font-size: 16px;
+  font-size: 3.5cqh;
   color: #9cd0ec;
-  margin-bottom: 24px;
-  min-height: 20px;
+  margin-bottom: 3cqh;
+  min-height: 2.5cqh;
 }
 .start-btn {
-  width: 220px;
-  padding: 20px 0;
-  border-radius: 12px;
+  width: 45cqw;
+  padding: 3.5cqh 0;
+  border-radius: 2cqh;
   border: none;
   background: var(--accent, #1f6fa8);
   color: #fff;
-  font-size: 18px;
+  font-size: 4cqh;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -604,10 +593,9 @@ body {
   cursor: not-allowed;
 }
 
-/* Memory screen */
 .memory-actions {
   display: flex;
-  gap: 16px;
+  gap: 3cqw;
   justify-content: center;
 }
-.memory-actions .start-btn { width: 160px; }
+.memory-actions .start-btn { width: 32cqw; }

@@ -18,6 +18,11 @@
   };
   var AUDIO_SOURCES = ["iPOD", "TV", "Aux", "Bluetooth"];
 
+  // Splashing-water emoji instead of the cyclone/swirl used before - it's
+  // a core, universally-supported emoji (unlike some of the more obscure
+  // symbols used elsewhere) and reads much more like a jet spray.
+  var JETS_ICON = "💦";
+
   // Inline SVG instead of the Unicode power glyph (U+23FB) - that codepoint
   // isn't in every mobile font's emoji set and was rendering as a "tofu"
   // box, so this guarantees the icon looks the same everywhere.
@@ -370,12 +375,11 @@
   }
 
   // Home screen's Jets icon (as opposed to the Jets screen's own controls)
-  // - per the manual, pressing it turns jets on at low speed if they're
-  // currently off, in addition to navigating to the Jets screen.
+  // - per the manual, pressing it while jets are off activates Pump One
+  // only, in addition to navigating to the Jets screen.
   function jetsTileTap() {
     if (!state.jets1 && state.jets2Level === 0) {
       apiPost("/fan/jets_1/turn_on");
-      apiPost("/fan/jets_2/turn_on", { speed_level: 1 });
     }
   }
 
@@ -482,10 +486,11 @@
     q("app-sidebar").classList.toggle("hidden", name !== "home");
   }
 
-  function screenHeaderHtml(title) {
+  function screenHeaderHtml(title, icon) {
     return (
       '<div class="screen-header">' +
         '<div class="home-btn" data-goto="home">🏠</div>' +
+        '<span class="header-icon">' + icon + '</span>' +
         '<div class="header-title">' + title + '</div>' +
       '</div>'
     );
@@ -582,14 +587,14 @@
           '<span class="value"><span id="home-temp-value">--</span><span class="unit">°F</span></span>' +
         '</div>' +
         '<div class="features-row">' +
-          '<div class="icon-tile feature-jets" id="tile-jets" data-goto="jets"><span class="glyph">🌀</span></div>' +
+          '<div class="icon-tile feature-jets" id="tile-jets" data-goto="jets"><span class="glyph">' + JETS_ICON + '</span></div>' +
           '<div class="icon-tile feature-music" id="tile-music" data-goto="music"><span class="glyph">🎵</span></div>' +
           '<div class="icon-tile feature-lights" id="tile-lights" data-goto="lights"><span class="glyph">💡</span></div>' +
         '</div>' +
       '</div>' +
 
       '<div class="screen" id="screen-temp">' +
-        screenHeaderHtml("Set Temperature") +
+        screenHeaderHtml("Set Temperature", "🌡️") +
         '<div class="temp-screen-body">' +
           '<div class="temp-adjust">' +
             '<div class="target"><span id="temp-target">--</span>°F</div>' +
@@ -602,29 +607,33 @@
       '</div>' +
 
       '<div class="screen" id="screen-jets">' +
-        screenHeaderHtml("Jets") +
-        '<div class="jets-row">' +
-          '<span class="row-number-text">1</span>' +
-          '<div class="speed-buttons">' +
-            '<button class="speed-btn" id="jets1-off">OFF</button>' +
-            '<button class="speed-btn icon-only" id="jets1-on">🌀</button>' +
+        screenHeaderHtml("Jets", JETS_ICON) +
+        '<div class="jets-layout">' +
+          '<div class="jets-rows-col">' +
+            '<div class="jets-row">' +
+              '<span class="row-number-text">1</span>' +
+              '<div class="speed-buttons">' +
+                '<button class="speed-btn" id="jets1-off">OFF</button>' +
+                '<button class="speed-btn icon-only" id="jets1-on">' + JETS_ICON + '</button>' +
+              '</div>' +
+            '</div>' +
+            '<div class="jets-row">' +
+              '<span class="row-number-text">2</span>' +
+              '<div class="speed-buttons">' +
+                '<button class="speed-btn" id="jets2-off">OFF</button>' +
+                '<button class="speed-btn icon-only" id="jets2-low">' + JETS_ICON + '</button>' +
+                '<button class="speed-btn icon-only" id="jets2-high">' + JETS_ICON + JETS_ICON + '</button>' +
+              '</div>' +
+            '</div>' +
           '</div>' +
-        '</div>' +
-        '<div class="jets-row">' +
-          '<span class="row-number-text">2</span>' +
-          '<div class="speed-buttons">' +
-            '<button class="speed-btn" id="jets2-off">OFF</button>' +
-            '<button class="speed-btn icon-only" id="jets2-low">🌀</button>' +
-            '<button class="speed-btn icon-only" id="jets2-high">🌀🌀</button>' +
+          '<div class="jets-master-col">' +
+            '<button class="master-btn" id="jets-master" title="All jets off, or all on if off">' + POWER_ICON + '</button>' +
           '</div>' +
-        '</div>' +
-        '<div class="jets-master-row">' +
-          '<button class="master-btn" id="jets-master" title="All jets off, or all on if off">' + POWER_ICON + '</button>' +
         '</div>' +
       '</div>' +
 
       '<div class="screen" id="screen-lights">' +
-        screenHeaderHtml("Lights") +
+        screenHeaderHtml("Lights", "💡") +
         '<div class="lights-layout">' +
           '<div class="moods-col">' +
             '<div class="icon-section-label">Moods</div>' +
@@ -647,7 +656,7 @@
       '</div>' +
 
       '<div class="screen" id="screen-lights-zones">' +
-        screenHeaderHtml("Lights: Zones") +
+        screenHeaderHtml("Lights: Zones", "💡") +
         '<div class="zone-picker">' +
           '<div class="zone-list">' +
             LIGHT_ZONES.map(function (z) {
@@ -667,7 +676,7 @@
       '</div>' +
 
       '<div class="screen" id="screen-music">' +
-        screenHeaderHtml("Music") +
+        screenHeaderHtml("Music", "🎵") +
         '<div class="music-power-row">' +
           '<span class="music-status" id="music-status">OFF</span>' +
           '<button class="master-btn" id="music-power-btn">' + POWER_ICON + '</button>' +
@@ -687,7 +696,7 @@
       '</div>' +
 
       '<div class="screen" id="screen-music-detail">' +
-        screenHeaderHtml("Music") +
+        screenHeaderHtml("Music", "🎵") +
         numericAdjusterRowHtml("bass", "Bass") +
         numericAdjusterRowHtml("treble", "Treble") +
         numericAdjusterRowHtml("balance", "Balance") +
@@ -699,7 +708,7 @@
       '</div>' +
 
       '<div class="screen" id="screen-memory">' +
-        screenHeaderHtml("Memory") +
+        screenHeaderHtml("Memory", MEMORY_ICON) +
         '<div class="clean-panel">' +
           '<div class="status" id="memory-status"></div>' +
           '<div class="memory-actions">' +
@@ -710,7 +719,7 @@
       '</div>' +
 
       '<div class="screen" id="screen-clean">' +
-        screenHeaderHtml("Clean Cycle") +
+        screenHeaderHtml("Clean Cycle", CLEAN_ICON) +
         '<div class="clean-panel">' +
           '<div class="status" id="clean-status"></div>' +
           '<button class="start-btn" id="clean-start-btn">Start</button>' +
@@ -718,7 +727,7 @@
       '</div>' +
 
       '<div class="screen" id="screen-settings">' +
-        screenHeaderHtml("Settings") +
+        screenHeaderHtml("Settings", "⚙️") +
         onOffRowHtml("templock", "Temperature Lock") +
         onOffRowHtml("spalock", "Spa Lock") +
         onOffRowHtml("summer", "Summer Timer") +
