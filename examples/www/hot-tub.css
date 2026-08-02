@@ -262,6 +262,11 @@ body {
   background: #123249;
   border: 1px solid #1e4a67;
   border-radius: 14px;
+  /* Sidebar tiles are real <button> elements, which don't inherit text
+     color from their surroundings the way a <div> does by default - that
+     was leaving the sidebar's icons at the browser's default dark button
+     text color instead of the page's light color. */
+  color: inherit;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -451,6 +456,12 @@ body {
   font-size: 5cqh;
   flex-shrink: 0;
   cursor: pointer;
+}
+/* Page-navigation arrows (next/previous screen) are rounded rectangles
+   on the physical remote, unlike the circular power buttons that share
+   this same base size/color. */
+.master-btn.nav-btn {
+  border-radius: 20%;
 }
 
 .speed-buttons {

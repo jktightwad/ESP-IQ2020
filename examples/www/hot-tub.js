@@ -667,7 +667,7 @@
             '</div>' +
             '<div class="swatch-grid">' + colorSwatchesHtml("all") + '</div>' +
             '<div class="advance-row">' +
-              '<button class="master-btn" data-goto="lights-zones">' + ARROW_RIGHT_ICON + '</button>' +
+              '<button class="master-btn nav-btn" data-goto="lights-zones">' + ARROW_RIGHT_ICON + '</button>' +
             '</div>' +
           '</div>' +
         '</div>' +
@@ -689,7 +689,7 @@
           '</div>' +
         '</div>' +
         '<div class="advance-row">' +
-          '<button class="master-btn" data-goto="lights">' + ARROW_LEFT_ICON + '</button>' +
+          '<button class="master-btn nav-btn" data-goto="lights">' + ARROW_LEFT_ICON + '</button>' +
         '</div>' +
       '</div>' +
 
@@ -708,7 +708,7 @@
             AUDIO_SOURCES.map(function (s) { return '<button class="speed-btn" id="source-' + s + '">' + s + '</button>'; }).join("") +
           '</div>' +
           '<div class="advance-row">' +
-            '<button class="master-btn" data-goto="music-detail">' + ARROW_RIGHT_ICON + '</button>' +
+            '<button class="master-btn nav-btn" data-goto="music-detail">' + ARROW_RIGHT_ICON + '</button>' +
           '</div>' +
         '</div>' +
       '</div>' +
@@ -721,7 +721,7 @@
         numericAdjusterRowHtml("subwoofer", "Subwoofer") +
         '<div class="range-note">Bass/Treble/Balance won\'t accept negative values set from here - a firmware quirk on the tub\'s side, only shows correctly if set from the physical remote.</div>' +
         '<div class="advance-row">' +
-          '<button class="master-btn" data-goto="music">' + ARROW_LEFT_ICON + '</button>' +
+          '<button class="master-btn nav-btn" data-goto="music">' + ARROW_LEFT_ICON + '</button>' +
         '</div>' +
       '</div>' +
 
@@ -754,7 +754,7 @@
           onOffRowHtml("summer", "Summer Timer") +
         '</div>' +
         '<div class="advance-row">' +
-          '<button class="master-btn" data-goto="settings-2">' + ARROW_RIGHT_ICON + '</button>' +
+          '<button class="master-btn nav-btn" data-goto="settings-2">' + ARROW_RIGHT_ICON + '</button>' +
         '</div>' +
       '</div>' +
 
@@ -762,12 +762,12 @@
         screenHeaderHtml("Settings", "⚙️") +
         '<div class="setting-group">' +
           '<div class="setting-row">' +
-            '<span class="setting-label">Version</span>' +
             '<span class="setting-value" id="settings-version">--</span>' +
+            '<span class="setting-label">Version</span>' +
           '</div>' +
         '</div>' +
         '<div class="advance-row">' +
-          '<button class="master-btn" data-goto="settings">' + ARROW_LEFT_ICON + '</button>' +
+          '<button class="master-btn nav-btn" data-goto="settings">' + ARROW_LEFT_ICON + '</button>' +
         '</div>' +
       '</div>' +
 
