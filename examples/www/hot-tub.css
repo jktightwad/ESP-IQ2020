@@ -414,6 +414,35 @@ body {
 .setting-row .speed-buttons { flex: none; gap: 1.2cqw; }
 .setting-row .speed-btn { flex: none; padding: 3.6cqh 3.5cqw; font-size: 6.4cqh; }
 
+/* Settings page 2 (Temperature/Brightness/Language) - a two-column grid
+   instead of independent rows, so every control (F/C pair, AUTO, the
+   brightness bar) shares one column width (the widest naturally sizes
+   the column, and the rest stretch to match, same idea as the Memory
+   popout's matched-width buttons) and every label starts at the exact
+   same x position in column 2 - both were inconsistent before, since
+   each row's own button set had a different natural width. */
+.settings2-grid {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  align-items: center;
+  column-gap: 3cqw;
+  row-gap: 2.2cqh;
+  margin-bottom: 3cqh;
+}
+.settings2-grid .speed-buttons { gap: 1.2cqw; }
+.settings2-grid .speed-btn { flex: none; padding: 3.6cqh 3.5cqw; font-size: 6.4cqh; }
+/* The brightness bar isn't stretched to match the button column (its
+   internal segments are fixed-width, so stretching would just leave
+   dead space inside it) - shrunk down instead so its own natural size
+   is comfortably narrower than the F/C pair, keeping proportions close
+   to the reference instead of the oversized default segment size. */
+.settings2-grid .adjuster-pill {
+  padding: 0.6cqh 1.2cqw;
+  gap: 0.8cqw;
+}
+.settings2-grid .segment { width: 1.3cqw; height: 3cqh; }
+.settings2-grid .chev { font-size: 3cqh; padding: 0.3cqh 0.6cqw; }
+
 /* The forward/back arrow sits beside the last row group, vertically
    centered against it, instead of trailing far below in normal document
    flow - matches the manual, where the arrow lines up with the last row

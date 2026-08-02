@@ -830,29 +830,24 @@
           '<div class="setting-group">' +
             onOffRowHtml("summer", "Summer Timer") +
           '</div>' +
-          '<button class="master-btn nav-btn settings-nav-btn" data-goto="settings-2">' + ARROW_RIGHT_ICON + '</button>' +
+          '<button class="master-btn nav-btn settings-nav-btn" data-goto="settings-2">→</button>' +
         '</div>' +
       '</div>' +
 
       '<div class="screen" id="screen-settings-2">' +
         screenHeaderHtml("Settings", "⚙️") +
-        '<div class="setting-group">' +
-          '<div class="setting-row">' +
-            '<div class="speed-buttons">' +
-              '<button class="speed-btn on" disabled title="This build is Fahrenheit-only">°F</button>' +
-              '<button class="speed-btn" disabled title="This build is Fahrenheit-only">°C</button>' +
-            '</div>' +
-            '<span class="setting-label">Temperature</span>' +
+        '<div class="settings2-grid">' +
+          '<div class="speed-buttons">' +
+            '<button class="speed-btn on" disabled title="This build is Fahrenheit-only">°F</button>' +
+            '<button class="speed-btn" disabled title="This build is Fahrenheit-only">°C</button>' +
           '</div>' +
-        '</div>' +
-        '<div class="setting-group">' +
-          '<div class="setting-row">' +
-            '<div class="speed-buttons">' +
-              '<button class="speed-btn on" id="settings-brightness-auto" title="Reset screen brightness">AUTO</button>' +
-            '</div>' +
-            '<span class="setting-label">Brightness</span>' +
+          '<span class="setting-label">Temperature</span>' +
+          '<div class="speed-buttons">' +
+            '<button class="speed-btn on" id="settings-brightness-auto" title="Reset screen brightness">AUTO</button>' +
           '</div>' +
+          '<span class="setting-label">Brightness</span>' +
           barAdjusterHtml("brightness", 8) +
+          '<span></span>' +
         '</div>' +
         '<div class="setting-group-row">' +
           '<div class="setting-group">' +
@@ -861,7 +856,7 @@
             '</button>' +
             '<div class="settings-version-caption">Version <span id="settings-version">--</span></div>' +
           '</div>' +
-          '<button class="master-btn nav-btn settings-nav-btn" data-goto="settings">' + ARROW_LEFT_ICON + '</button>' +
+          '<button class="master-btn nav-btn settings-nav-btn" data-goto="settings">←</button>' +
         '</div>' +
       '</div>' +
 
