@@ -591,13 +591,16 @@ body {
    space, top-right corner) instead of any content row - that's the only
    way its size truly has zero effect on where other rows sit, rather
    than just moving the coupling into a margin that has to track it. */
+/* Same correction as the Music screen's power button - top:2.5cqh (just
+   the screen's own padding) put it level with the header instead of the
+   "All Lights" row below it. */
 #alllights-power {
   position: absolute;
-  top: 2.5cqh;
+  top: 20cqh;
   right: 3cqw;
-  width: 16cqh;
-  height: 16cqh;
-  font-size: 7cqh;
+  width: 14cqh;
+  height: 14cqh;
+  font-size: 6cqh;
 }
 .all-lights-top-row {
   margin-bottom: 2cqh;
@@ -713,12 +716,12 @@ body {
 }
 
 .now-playing-block {
-  margin-bottom: 1cqh;
+  margin-bottom: 2cqh;
 }
 .now-playing-row {
-  font-size: 2.8cqh;
+  font-size: 3.4cqh;
   color: #eaf2f6;
-  font-weight: 600;
+  font-weight: 700;
 }
 .now-playing-label {
   color: #9cd0ec;
@@ -732,16 +735,16 @@ body {
 .transport-row {
   display: flex;
   gap: 3cqw;
-  margin-bottom: 1.5cqh;
+  margin-bottom: 2.5cqh;
 }
 .transport-btn {
-  width: 8cqh;
-  height: 8cqh;
+  width: 11cqh;
+  height: 11cqh;
   border-radius: 50%;
-  background: rgba(255,255,255,0.12);
-  border: 1px solid rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.4);
   color: #fff;
-  font-size: 3.6cqh;
+  font-size: 5cqh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -768,13 +771,16 @@ body {
 /* Anchored to the screen itself (sharing the header's own vertical
    space, top-right corner) instead of any content row - same fix as
    the Lights screen's power button, for the same reason. */
+/* top:2.5cqh (just the screen's own padding) landed this flush with the
+   header row - the reference actually aligns it a row lower, level with
+   the Song/Artist text (i.e. after the header, not beside it). */
 .music-power-btn {
   position: absolute;
-  top: 2.5cqh;
+  top: 20cqh;
   right: 3cqw;
-  width: 18cqh;
-  height: 18cqh;
-  font-size: 8cqh;
+  width: 14cqh;
+  height: 14cqh;
+  font-size: 6cqh;
 }
 
 /* The volume bar and Bass/Treble/Balance/Subwoofer rows were using the
