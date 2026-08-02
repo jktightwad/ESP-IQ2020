@@ -742,7 +742,7 @@
             '</div>' +
             '<div class="swatch-grid-row">' +
               '<div class="swatch-grid">' + colorSwatchesHtml("all") + '</div>' +
-              '<button class="master-btn nav-btn" data-goto="lights-zones">' + ARROW_RIGHT_ICON + '</button>' +
+              '<button class="master-btn nav-btn" data-goto="lights-zones">→</button>' +
             '</div>' +
           '</div>' +
         '</div>' +
@@ -764,7 +764,7 @@
           '</div>' +
         '</div>' +
         '<div class="advance-row">' +
-          '<button class="master-btn nav-btn" data-goto="lights">' + ARROW_LEFT_ICON + '</button>' +
+          '<button class="master-btn nav-btn" data-goto="lights">←</button>' +
         '</div>' +
       '</div>' +
 
@@ -795,7 +795,7 @@
               '<span id="source-select-label">--</span>' +
               ARROW_RIGHT_ICON +
             '</button>' +
-            '<button class="master-btn nav-btn" data-goto="music-detail">' + ARROW_RIGHT_ICON + '</button>' +
+            '<button class="master-btn nav-btn" data-goto="music-detail">→</button>' +
           '</div>' +
         '</div>' +
         '<div class="source-popout" id="source-popout">' +
@@ -815,7 +815,7 @@
         numericAdjusterRowHtml("subwoofer", "Subwoofer") +
         '<div class="range-note">Bass/Treble/Balance won\'t accept negative values set from here - a firmware quirk on the tub\'s side, only shows correctly if set from the physical remote.</div>' +
         '<div class="advance-row">' +
-          '<button class="master-btn nav-btn" data-goto="music">' + ARROW_LEFT_ICON + '</button>' +
+          '<button class="master-btn nav-btn" data-goto="music">←</button>' +
         '</div>' +
       '</div>' +
 
