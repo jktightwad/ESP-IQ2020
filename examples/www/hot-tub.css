@@ -162,7 +162,7 @@ body {
   color: #6fb3d2;
 }
 .icon-section-label {
-  font-size: 3.2cqh;
+  font-size: 4cqh;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: #7fa8bf;
@@ -339,23 +339,49 @@ body {
   margin-bottom: 4cqh;
 }
 .setting-group:last-of-type { margin-bottom: 0; }
+/* A visible divider after this group (Temperature Lock + Spa Lock),
+   matching the manual - not between every row, just after the group. */
+.setting-group.divided {
+  border-bottom: 1px solid #2a4a66;
+  padding-bottom: 2cqh;
+}
 .setting-row {
   display: flex;
   align-items: center;
   gap: 2cqw;
-  padding: 2.5cqh 0;
+  padding: 1.2cqh 0;
 }
 .setting-label {
-  font-size: 3.6cqh;
+  font-size: 6.4cqh;
   color: #cfe8f7;
   flex: 1;
 }
 .setting-value {
-  font-size: 3.2cqh;
+  font-size: 6.4cqh;
   color: #9cd0ec;
 }
 .setting-row .speed-buttons { flex: none; gap: 1.2cqw; }
 .setting-row .speed-btn { flex: none; padding: 3.6cqh 3.5cqw; font-size: 6.4cqh; }
+
+/* The forward/back arrow sits beside the last row group, vertically
+   centered against it, instead of trailing far below in normal document
+   flow - matches the manual, where the arrow lines up with the last row
+   rather than sitting at the very bottom of the screen. */
+.setting-group-row {
+  display: flex;
+  align-items: center;
+  gap: 3cqw;
+}
+.setting-group-row .setting-group {
+  flex: 1;
+  margin-bottom: 0;
+}
+.settings-nav-btn {
+  width: 10cqh;
+  height: 10cqh;
+  font-size: 4cqh;
+  flex-shrink: 0;
+}
 
 /* Chevron/segmented-bar and chevron/number adjusters, used for brightness,
    volume, and Bass/Treble/Balance/Subwoofer - matches the manual's
@@ -449,7 +475,9 @@ body {
   align-items: center;
   justify-content: center;
   padding: 0;
+  font-size: 8cqh;
 }
+.jets-row .speed-btn.icon-only { font-size: 12cqh; }
 .speed-btn-spacer { visibility: hidden; }
 .master-btn {
   width: 14cqh;
@@ -604,14 +632,14 @@ body {
    lot of empty space around it. */
 .swatch-grid {
   display: grid;
-  grid-template-columns: repeat(4, 19cqh);
+  grid-template-columns: repeat(4, 22cqh);
   column-gap: 1.5cqw;
   row-gap: 1.5cqh;
   margin-bottom: 2cqh;
 }
 .color-swatch {
-  width: 19cqh;
-  height: 19cqh;
+  width: 22cqh;
+  height: 22cqh;
   border-radius: 10px;
   border: 2px solid transparent;
   cursor: pointer;

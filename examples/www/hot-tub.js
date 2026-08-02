@@ -746,28 +746,28 @@
 
       '<div class="screen" id="screen-settings">' +
         screenHeaderHtml("Settings", "⚙️") +
-        '<div class="setting-group">' +
+        '<div class="setting-group divided">' +
           onOffRowHtml("templock", "Temperature Lock") +
           onOffRowHtml("spalock", "Spa Lock") +
         '</div>' +
-        '<div class="setting-group">' +
-          onOffRowHtml("summer", "Summer Timer") +
-        '</div>' +
-        '<div class="advance-row">' +
-          '<button class="master-btn nav-btn" data-goto="settings-2">' + ARROW_RIGHT_ICON + '</button>' +
+        '<div class="setting-group-row">' +
+          '<div class="setting-group">' +
+            onOffRowHtml("summer", "Summer Timer") +
+          '</div>' +
+          '<button class="master-btn nav-btn settings-nav-btn" data-goto="settings-2">' + ARROW_RIGHT_ICON + '</button>' +
         '</div>' +
       '</div>' +
 
       '<div class="screen" id="screen-settings-2">' +
         screenHeaderHtml("Settings", "⚙️") +
-        '<div class="setting-group">' +
-          '<div class="setting-row">' +
-            '<span class="setting-value" id="settings-version">--</span>' +
-            '<span class="setting-label">Version</span>' +
+        '<div class="setting-group-row">' +
+          '<div class="setting-group">' +
+            '<div class="setting-row">' +
+              '<span class="setting-value" id="settings-version">--</span>' +
+              '<span class="setting-label">Version</span>' +
+            '</div>' +
           '</div>' +
-        '</div>' +
-        '<div class="advance-row">' +
-          '<button class="master-btn nav-btn" data-goto="settings">' + ARROW_LEFT_ICON + '</button>' +
+          '<button class="master-btn nav-btn settings-nav-btn" data-goto="settings">' + ARROW_LEFT_ICON + '</button>' +
         '</div>' +
       '</div>' +
 
