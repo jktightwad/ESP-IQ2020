@@ -505,7 +505,7 @@
     return (
       '<div class="screen-header">' +
         '<div class="home-btn" data-goto="home">🏠</div>' +
-        '<span class="header-icon">' + icon + '</span>' +
+        (icon ? '<span class="header-icon">' + icon + '</span>' : '') +
         '<div class="header-title">' + title + '</div>' +
       '</div>'
     );
@@ -611,7 +611,7 @@
       '</div>' +
 
       '<div class="screen" id="screen-temp">' +
-        screenHeaderHtml("Set Temperature", "🌡️") +
+        screenHeaderHtml("Set Temperature") +
         '<div class="temp-screen-body">' +
           '<div class="temp-adjust">' +
             '<div class="target"><span id="temp-target">--</span>°F</div>' +
@@ -632,6 +632,7 @@
               '<div class="speed-buttons">' +
                 '<button class="speed-btn" id="jets1-off">OFF</button>' +
                 '<button class="speed-btn icon-only" id="jets1-on">' + JETS_ICON + '</button>' +
+                '<div class="speed-btn-spacer"></div>' +
               '</div>' +
             '</div>' +
             '<div class="jets-row">' +

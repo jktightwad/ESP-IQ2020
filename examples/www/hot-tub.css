@@ -136,7 +136,7 @@ body {
 .home-btn {
   width: 11cqh;
   height: 11cqh;
-  border-radius: 50%;
+  border-radius: 20%;
   background: #123249;
   border: 1px solid #1e4a67;
   display: flex;
@@ -288,7 +288,7 @@ body {
   gap: 6cqw;
 }
 .temp-adjust .target {
-  font-size: 45cqh;
+  font-size: 65cqh;
   font-weight: 700;
   line-height: 1;
 }
@@ -298,13 +298,13 @@ body {
   gap: 3cqh;
 }
 .step-btn {
-  width: 18cqh;
-  height: 18cqh;
-  border-radius: 50%;
+  width: 22cqh;
+  height: 22cqh;
+  border-radius: 20%;
   border: none;
   background: var(--accent, #1f6fa8);
   color: #fff;
-  font-size: 8cqh;
+  font-size: 10cqh;
   cursor: pointer;
 }
 .step-btn:disabled {
@@ -421,7 +421,18 @@ body {
   justify-content: center;
   flex-shrink: 0;
 }
-.jets-row .speed-buttons { flex: 1; align-self: stretch; }
+/* Fixed 3-column grid (not flex, whose button width depends on however
+   many siblings are in that particular row) so Pump 1's OFF button is
+   the same size as Pump 2's OFF button, with an invisible spacer filling
+   Pump 1's missing 3rd (high-speed) slot instead of its 2 buttons
+   stretching wider to fill the row. */
+.jets-row .speed-buttons {
+  flex: 1;
+  align-self: stretch;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5cqw;
+}
 .jets-row .speed-btn {
   height: 100%;
   display: flex;
@@ -429,6 +440,7 @@ body {
   justify-content: center;
   padding: 0;
 }
+.speed-btn-spacer { visibility: hidden; }
 .master-btn {
   width: 14cqh;
   height: 14cqh;
