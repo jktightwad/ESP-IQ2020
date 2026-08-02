@@ -37,6 +37,12 @@
   var MEMORY_ICON = '<svg viewBox="0 0 24 24" width="1em" height="1em"><path d="M12 2.5l2.7 5.9 6.4.9-4.6 4.6 1.1 6.4L12 17.4 6.4 20.3l1.1-6.4-4.6-4.6 6.4-.9L12 2.5z" fill="currentColor"></path><text x="12" y="15.5" font-size="7.5" font-weight="700" text-anchor="middle" fill="#0b2036" font-family="Arial, sans-serif">M</text></svg>';
   var CLEAN_ICON = '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 3.2c3.6 4.6 5.6 7.7 5.6 10.4a5.6 5.6 0 1 1-11.2 0c0-2.7 2-5.8 5.6-10.4z"></path><path d="M9.3 13.6a2.9 2.9 0 0 0 4.6 1.9M14.7 10.6a2.9 2.9 0 0 0-4.6-1.9"></path></svg>';
 
+  // Proper shaft-and-arrowhead icons for next/previous-page navigation,
+  // matching the physical remote - a plain "▶"/"◀" triangle reads more
+  // like a play button than a page-advance arrow.
+  var ARROW_RIGHT_ICON = '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="12" x2="20" y2="12"></line><polyline points="13 5 20 12 13 19"></polyline></svg>';
+  var ARROW_LEFT_ICON = '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="20" y1="12" x2="4" y2="12"></line><polyline points="11 5 4 12 11 19"></polyline></svg>';
+
   // Fixed presets from the manual's "MOODS" section on the Lights screen.
   // "Magenta"/"Aqua" in the manual map to our closest available options
   // (Violet/Cyan) since those are the exact colors the component supports.
@@ -69,7 +75,8 @@
     balance: null,
     subwoofer: null,
     songTitle: "",
-    artistName: ""
+    artistName: "",
+    version: ""
   };
   LIGHT_ZONES.forEach(function (z) { state.zones[z.key] = { color: null, intensity: null }; });
 
@@ -126,6 +133,9 @@
     apiGet("/number/subwoofer").then(function (d) { state.subwoofer = d ? d.value : null; renderMusic(); });
     apiGet("/text/song_title").then(function (d) { state.songTitle = (d && d.value) || ""; renderMusic(); });
     apiGet("/text/artist_name").then(function (d) { state.artistName = (d && d.value) || ""; renderMusic(); });
+
+    // Settings: page 2
+    apiGet("/text_sensor/version").then(function (d) { state.version = (d && d.value) || ""; renderSettings(); });
   }
 
   // ---- Live updates ----
@@ -175,6 +185,10 @@
       if (objectId === "audio_source") { state.audioSource = d.value; renderMusic(); return; }
       var zoneC = LIGHT_ZONES.filter(function (z) { return z.colorId === objectId; })[0];
       if (zoneC) { state.zones[zoneC.key].color = d.value; renderLights(); }
+      return;
+    }
+    if (domain === "text_sensor") {
+      if (objectId === "version") { state.version = d.value || ""; renderSettings(); }
       return;
     }
     if (domain === "number") {
@@ -276,6 +290,7 @@
     renderOnOff("templock", state.tempLock);
     renderOnOff("spalock", state.spaLock);
     renderOnOff("summer", state.summerTimer);
+    q("settings-version").textContent = state.version || "--";
   }
 
   function renderOnOff(idPrefix, isOn) {
@@ -480,7 +495,7 @@
   // just its own content plus a Home icon to jump back.
 
   function showScreen(name) {
-    ["home", "temp", "jets", "lights", "lights-zones", "music", "music-detail", "memory", "clean", "settings"].forEach(function (n) {
+    ["home", "temp", "jets", "lights", "lights-zones", "music", "music-detail", "memory", "clean", "settings", "settings-2"].forEach(function (n) {
       q("screen-" + n).classList.toggle("active", n === name);
     });
     q("app-sidebar").classList.toggle("hidden", name !== "home");
@@ -651,7 +666,7 @@
             '</div>' +
             '<div class="swatch-grid">' + colorSwatchesHtml("all") + '</div>' +
             '<div class="advance-row">' +
-              '<button class="master-btn" data-goto="lights-zones">▶</button>' +
+              '<button class="master-btn" data-goto="lights-zones">' + ARROW_RIGHT_ICON + '</button>' +
             '</div>' +
           '</div>' +
         '</div>' +
@@ -673,7 +688,7 @@
           '</div>' +
         '</div>' +
         '<div class="advance-row">' +
-          '<button class="master-btn" data-goto="lights">◀</button>' +
+          '<button class="master-btn" data-goto="lights">' + ARROW_LEFT_ICON + '</button>' +
         '</div>' +
       '</div>' +
 
@@ -692,7 +707,7 @@
             AUDIO_SOURCES.map(function (s) { return '<button class="speed-btn" id="source-' + s + '">' + s + '</button>'; }).join("") +
           '</div>' +
           '<div class="advance-row">' +
-            '<button class="master-btn" data-goto="music-detail">▶</button>' +
+            '<button class="master-btn" data-goto="music-detail">' + ARROW_RIGHT_ICON + '</button>' +
           '</div>' +
         '</div>' +
       '</div>' +
@@ -705,7 +720,7 @@
         numericAdjusterRowHtml("subwoofer", "Subwoofer") +
         '<div class="range-note">Bass/Treble/Balance won\'t accept negative values set from here - a firmware quirk on the tub\'s side, only shows correctly if set from the physical remote.</div>' +
         '<div class="advance-row">' +
-          '<button class="master-btn" data-goto="music">◀</button>' +
+          '<button class="master-btn" data-goto="music">' + ARROW_LEFT_ICON + '</button>' +
         '</div>' +
       '</div>' +
 
@@ -730,9 +745,29 @@
 
       '<div class="screen" id="screen-settings">' +
         screenHeaderHtml("Settings", "⚙️") +
-        onOffRowHtml("templock", "Temperature Lock") +
-        onOffRowHtml("spalock", "Spa Lock") +
-        onOffRowHtml("summer", "Summer Timer") +
+        '<div class="setting-group">' +
+          onOffRowHtml("templock", "Temperature Lock") +
+          onOffRowHtml("spalock", "Spa Lock") +
+        '</div>' +
+        '<div class="setting-group">' +
+          onOffRowHtml("summer", "Summer Timer") +
+        '</div>' +
+        '<div class="advance-row">' +
+          '<button class="master-btn" data-goto="settings-2">' + ARROW_RIGHT_ICON + '</button>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="screen" id="screen-settings-2">' +
+        screenHeaderHtml("Settings", "⚙️") +
+        '<div class="setting-group">' +
+          '<div class="setting-row">' +
+            '<span class="setting-label">Version</span>' +
+            '<span class="setting-value" id="settings-version">--</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="advance-row">' +
+          '<button class="master-btn" data-goto="settings">' + ARROW_LEFT_ICON + '</button>' +
+        '</div>' +
       '</div>' +
 
       '</div>'; // .app-content

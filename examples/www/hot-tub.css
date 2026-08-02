@@ -319,21 +319,33 @@ body {
 }
 
 /* Settings-style rows: a chevron/segment or OFF-ON control on the left,
-   the setting's name to the right - matches the manual's Settings screens. */
+   the setting's name to the right - matches the manual's Settings screens.
+   Rows are grouped (a gap between groups, no gap within one) instead of
+   one continuous list, matching the manual's visual split between
+   Temperature/Spa Lock and Summer Timer. */
+.setting-group {
+  margin-bottom: 4cqh;
+}
+.setting-group:last-of-type { margin-bottom: 0; }
 .setting-row {
   display: flex;
   align-items: center;
   gap: 2cqw;
-  padding: 1.5cqh 0;
+  padding: 2.5cqh 0;
   border-bottom: 1px solid #1e4a67;
 }
+.setting-group .setting-row:last-child { border-bottom: none; }
 .setting-label {
-  font-size: 3.2cqh;
+  font-size: 3.6cqh;
   color: #cfe8f7;
   flex: 1;
 }
-.setting-row .speed-buttons { flex: none; gap: 1cqw; }
-.setting-row .speed-btn { flex: none; padding: 1.2cqh 3cqw; }
+.setting-value {
+  font-size: 3.2cqh;
+  color: #9cd0ec;
+}
+.setting-row .speed-buttons { flex: none; gap: 1.2cqw; }
+.setting-row .speed-btn { flex: none; padding: 1.8cqh 3.5cqw; font-size: 3.2cqh; }
 
 /* Chevron/segmented-bar and chevron/number adjusters, used for brightness,
    volume, and Bass/Treble/Balance/Subwoofer - matches the manual's
