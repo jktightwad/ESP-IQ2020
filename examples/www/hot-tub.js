@@ -53,7 +53,6 @@
     jets1: false,
     jets2Level: 0, // 0 = off, 1 = low, 2 = high
 
-    lightsCycleSpeed: null,
     zones: {}, // key -> { color, intensity }
     selectedLightZone: "underwater",
 
@@ -107,7 +106,6 @@
     apiGet("/fan/jets_2").then(function (d) { state.jets2Level = (d && d.speed_level) ? d.speed_level : 0; renderJets(); });
 
     // Lights detail
-    apiGet("/select/color_cycle_speed").then(function (d) { state.lightsCycleSpeed = d && d.value; renderLights(); });
     LIGHT_ZONES.forEach(function (z) {
       apiGet("/select/" + z.colorId).then(function (d) { state.zones[z.key].color = d && d.value; renderLights(); });
       apiGet("/number/" + z.intensityId).then(function (d) { state.zones[z.key].intensity = d ? d.value : null; renderLights(); });
@@ -169,7 +167,6 @@
       return;
     }
     if (domain === "select") {
-      if (objectId === "color_cycle_speed") { state.lightsCycleSpeed = d.value; renderLights(); return; }
       if (objectId === "audio_source") { state.audioSource = d.value; renderMusic(); return; }
       var zoneC = LIGHT_ZONES.filter(function (z) { return z.colorId === objectId; })[0];
       if (zoneC) { state.zones[zoneC.key].color = d.value; renderLights(); }
@@ -241,7 +238,6 @@
 
   function renderLights() {
     q("alllights-power").classList.toggle("on", state.lights);
-    var allZoneIntensity = state.zones[state.selectedLightZone] ? state.zones[state.selectedLightZone].intensity : null;
     // "All Lights" brightness bar reflects the currently-selected zone's
     // intensity isn't quite right conceptually; show the max across zones
     // that are on instead, as a reasonable stand-in for "overall" level.
@@ -251,10 +247,6 @@
       if (v != null && v > maxIntensity) maxIntensity = v;
     });
     renderSegmentBar("alllights", maxIntensity, 5, 5);
-    ["Off", "Slow", "Normal", "Fast"].forEach(function (speed) {
-      var el = q("cyclespeed-" + speed);
-      if (el) el.classList.toggle("on", state.lightsCycleSpeed === speed);
-    });
     renderLightsZones();
   }
 
@@ -427,7 +419,6 @@
       jets1: state.jets1,
       jets2Level: state.jets2Level,
       lights: state.lights,
-      lightsCycleSpeed: state.lightsCycleSpeed,
       zones: JSON.parse(JSON.stringify(state.zones)),
       audioPower: state.audioPower,
       audioSource: state.audioSource,
@@ -452,7 +443,6 @@
     if (mem.jets1) apiPost("/fan/jets_1/turn_on"); else apiPost("/fan/jets_1/turn_off");
     setJets2(mem.jets2Level || 0);
     if (!!mem.lights !== !!state.lights) toggleSwitch("lights", state.lights);
-    if (mem.lightsCycleSpeed) setSelect("color_cycle_speed", mem.lightsCycleSpeed);
     LIGHT_ZONES.forEach(function (z) {
       var zs = mem.zones && mem.zones[z.key];
       if (!zs) return;
@@ -649,13 +639,6 @@
               barAdjusterHtml("alllights", 5) +
             '</div>' +
             '<div class="swatch-grid">' + colorSwatchesHtml("all") + '</div>' +
-            '<div class="icon-section-label">Cycle Speed</div>' +
-            '<div class="speed-buttons">' +
-              '<button class="speed-btn" id="cyclespeed-Off">Off</button>' +
-              '<button class="speed-btn" id="cyclespeed-Slow">Slow</button>' +
-              '<button class="speed-btn" id="cyclespeed-Normal">Normal</button>' +
-              '<button class="speed-btn" id="cyclespeed-Fast">Fast</button>' +
-            '</div>' +
             '<div class="advance-row">' +
               '<button class="master-btn" data-goto="lights-zones">▶</button>' +
             '</div>' +
@@ -780,10 +763,6 @@
     // Lights - Moods presets
     document.querySelectorAll("[data-mood]").forEach(function (el) {
       el.addEventListener("click", function () { applyMood(parseInt(el.getAttribute("data-mood"), 10)); });
-    });
-
-    ["Off", "Slow", "Normal", "Fast"].forEach(function (speed) {
-      q("cyclespeed-" + speed).addEventListener("click", function () { setSelect("color_cycle_speed", speed); });
     });
 
     // Lights: Zones screen - pick a zone, then color/intensity apply to it

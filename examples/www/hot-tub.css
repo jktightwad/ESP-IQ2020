@@ -9,6 +9,21 @@ html, body {
   -webkit-tap-highlight-color: transparent;
   user-select: none;
 }
+/* The physical remote's screen is a fixed ~2:1 landscape shape. Locking
+   #app to that same ratio and centering it (letterboxing any leftover
+   space) means every screen's internal proportions look right regardless
+   of the actual device's aspect ratio, instead of stretching to whatever
+   shape the browser window happens to be. container-type:size lets the
+   sidebar below measure itself against #app's real rendered box (cqh)
+   instead of the raw viewport - raw vw/vh would be wrong here since the
+   landscape-rotation trick further down swaps what's actually visible
+   relative to the true (portrait) viewport. */
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  container-type: size;
+}
 
 /* Top-level layout: a persistent icon sidebar on the left (Power/Clean
    Cycle/Settings - present on every screen, matching the physical remote)
@@ -16,9 +31,11 @@ html, body {
 #app {
   display: flex;
   flex-direction: row;
-  height: 100%;
-  max-width: 900px;
-  margin: 0 auto;
+  aspect-ratio: 2 / 1;
+  width: min(100cqw, 200cqh);
+  max-width: 1200px;
+  container-type: size;
+  overflow: hidden;
 }
 
 /* Force landscape presentation on phones, since the physical Spa Control
@@ -51,19 +68,18 @@ html, body {
   }
 }
 
-/* Sidebar icons are square (like the physical remote's). The column's
-   width used to be a fixed guess independent of the actual screen height,
-   which made 4 small squares with big leftover gaps between them on a
-   tall screen - sizing the column itself from viewport height (vh) means
-   the squares are sized to actually fill the column edge-to-edge. */
+/* Sidebar icons are square (like the physical remote's). The column is
+   sized from #app's own height (via cqh, not the viewport) so the 4
+   squares scale to actually fill the column edge-to-edge no matter what
+   shape #app itself ends up being. */
 .app-sidebar {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 1.2vh;
-  width: 22vh;
+  gap: 1.2cqh;
+  width: 22cqh;
   flex-shrink: 0;
-  padding: 1vh;
+  padding: 1cqh;
   background: #0f2436;
   border-right: 1px solid #1e4a67;
 }
@@ -379,8 +395,8 @@ html, body {
 }
 
 /* Lights screen: Moods is a persistent left column (like the real
-   remote's layout), main content (All Lights, Cycle Speed) on the
-   right, rather than everything stacked in one vertical flow. */
+   remote's layout), main content (All Lights) on the right, rather than
+   everything stacked in one vertical flow. */
 .lights-layout {
   display: flex;
   gap: 16px;
@@ -388,13 +404,13 @@ html, body {
 .moods-col {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  width: 56px;
+  gap: 8px;
+  width: 17%;
   flex-shrink: 0;
 }
 .lights-main { flex: 1; min-width: 0; }
 .mood-btn {
-  height: 38px;
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -402,7 +418,7 @@ html, body {
   border: 1px solid #5c1414;
   background: rgba(0,0,0,0.2);
   color: #fff;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   cursor: pointer;
 }
