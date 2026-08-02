@@ -84,7 +84,6 @@ body {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 1.2cqh;
   padding: 0.8cqh;
   flex-shrink: 0;
@@ -96,10 +95,17 @@ body {
    plain .icon-tile rule below regardless of source order - two classes
    of equal specificity used to depend on declaration order, and
    .icon-tile's dark navy background was winning, leaving the sidebar
-   dark instead of the bright blue the physical buttons actually are. */
+   dark instead of the bright blue the physical buttons actually are.
+   width:100% (default align-items:stretch fills the column) instead of
+   width:auto+centered - the tiles should fill the sidebar's own width
+   edge-to-edge like the physical buttons, not float as small squares
+   with empty space on either side. Both width and height are now
+   explicit, so the base .icon-tile's aspect-ratio:1 has no effect here -
+   these end up as slightly-wide rectangles rather than perfect squares,
+   matching the real buttons closer than a forced square would. */
 .icon-tile.sidebar-tile {
   flex: none;
-  width: auto;
+  width: 100%;
   height: calc((100cqh - 1.2cqh * 3 - 0.8cqh * 2) / 4);
   padding: 0;
   background: #2f7fd6;
