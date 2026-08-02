@@ -237,7 +237,7 @@ body {
 .temp-tile .value {
   font-family: "Arial Narrow", "Roboto Condensed", "Helvetica Neue", Arial, sans-serif;
   font-stretch: condensed;
-  font-size: 92cqh;
+  font-size: 78cqh;
   font-weight: 700;
   line-height: 1;
   /* The named condensed fonts above aren't guaranteed to exist on every
@@ -542,19 +542,22 @@ body {
 }
 /* Fixed width, independent of the button size - shrinking the buttons
    (below) to fit all 4 on screen shouldn't also shrink this panel. */
+/* Column width matches the button's own computed size (height-driven,
+   so 4 always fit vertically) plus modest padding, instead of a wider
+   guessed value that left visible empty space on both sides. */
 .moods-col {
   display: flex;
   flex-direction: column;
   gap: 1.2cqh;
   flex-shrink: 0;
-  width: 20cqw;
-  padding: 0 2cqw;
+  width: 10cqw;
+  padding: 0 1.2cqw;
 }
 .lights-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .mood-btn {
   aspect-ratio: 1;
   width: auto;
-  height: calc(((100cqh - 24cqh - (1.2cqh * 3)) / 4) * 0.7);
+  height: calc(((100cqh - 24cqh - (1.2cqh * 3)) / 4) * 0.85);
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -563,7 +566,7 @@ body {
   border: 1px solid #5c1414;
   background: rgba(0,0,0,0.2);
   color: #fff;
-  font-size: 3cqh;
+  font-size: 3.4cqh;
   font-weight: 600;
   cursor: pointer;
 }
@@ -581,17 +584,21 @@ body {
 .all-lights-top-row {
   margin-bottom: 2cqh;
 }
-/* The brightness adjuster was much smaller than the space available next
-   to it - enlarge it specifically here (Music's volume bar is untouched). */
-.all-lights-top-row .adjuster-pill {
-  padding: 1.8cqh 2.5cqw;
+/* The brightness adjuster is about 2x taller than the base style here
+   and on the Zones screen's zone editor (Music's volume bar is
+   untouched - this is scoped to Lights specifically). */
+.all-lights-top-row .adjuster-pill,
+.zone-editor .adjuster-pill {
+  padding: 3.6cqh 2.5cqw;
 }
-.all-lights-top-row .segment {
+.all-lights-top-row .segment,
+.zone-editor .segment {
   width: 3cqw;
-  height: 6cqh;
+  height: 12cqh;
 }
-.all-lights-top-row .chev {
-  font-size: 5cqh;
+.all-lights-top-row .chev,
+.zone-editor .chev {
+  font-size: 10cqh;
 }
 #alllights-power.on { background: #1f9d55; }
 
@@ -602,9 +609,16 @@ body {
 }
 /* Pin the arrow to the bottom of the column instead of trailing right
    after the content above it. */
-.lights-main .advance-row,
 #screen-lights-zones .advance-row {
   margin-top: auto;
+}
+/* The forward arrow sits beside the swatch grid, its bottom edge aligned
+   with the grid's bottom row (not vertically centered against the whole
+   2-row grid, and not trailing below it). */
+.swatch-grid-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 3cqw;
 }
 
 /* Lights: Zones screen - pick a zone on the left, shared color/intensity
@@ -621,31 +635,36 @@ body {
   width: 20cqw;
   flex-shrink: 0;
 }
+/* A square color chip with the label as plain text beside it, matching
+   the physical remote - not a pill-shaped button with the text inside. */
 .zone-btn {
   display: flex;
   align-items: center;
-  padding: 1.5cqh 1.5cqw;
-  border-radius: 8px;
-  border: 1px solid #1e4a67;
-  background: #123249;
+  gap: 1.5cqw;
+  padding: 0.8cqh 0;
+  border: none;
+  background: transparent;
   color: #eaf2f6;
   font-size: 2.8cqh;
   text-align: left;
   cursor: pointer;
 }
 .zone-btn.selected {
-  background: var(--accent, #1f6fa8);
-  border-color: var(--accent, #2a80b8);
+  color: #fff;
+  font-weight: 700;
 }
 .zone-color-preview {
   display: inline-block;
-  width: 3.6cqh;
-  height: 3.6cqh;
-  border-radius: 50%;
-  margin-right: 1.2cqw;
+  width: 7cqh;
+  height: 7cqh;
+  border-radius: 6px;
   flex-shrink: 0;
   background: #555;
-  border: 1px solid rgba(255,255,255,0.3);
+  border: 2px solid var(--accent-soft, #5c1414);
+}
+.zone-btn.selected .zone-color-preview {
+  border-color: #fff;
+  box-shadow: 0 0 0 2px var(--accent, #1f6fa8);
 }
 .zone-editor { flex: 1; }
 .zone-editor .adjuster-pill { margin-bottom: 2cqh; }

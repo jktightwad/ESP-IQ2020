@@ -40,8 +40,12 @@
   // Proper shaft-and-arrowhead icons for next/previous-page navigation,
   // matching the physical remote - a plain "▶"/"◀" triangle reads more
   // like a play button than a page-advance arrow.
-  var ARROW_RIGHT_ICON = '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="12" x2="20" y2="12"></line><polyline points="13 5 20 12 13 19"></polyline></svg>';
-  var ARROW_LEFT_ICON = '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="20" y1="12" x2="4" y2="12"></line><polyline points="11 5 4 12 11 19"></polyline></svg>';
+  // Wide viewBox with a long shaft (not square like the other icons) so
+  // the arrow fills the nav button's wide rectangle instead of floating
+  // as a small square glyph in the middle of it - width/height are set
+  // to a non-1:1 ratio on purpose, unlike every other icon here.
+  var ARROW_RIGHT_ICON = '<svg viewBox="0 0 48 24" width="2.4em" height="1.1em" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="2" y1="12" x2="36" y2="12"></line><polyline points="27 3 44 12 27 21"></polyline></svg>';
+  var ARROW_LEFT_ICON = '<svg viewBox="0 0 48 24" width="2.4em" height="1.1em" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="46" y1="12" x2="12" y2="12"></line><polyline points="21 3 4 12 21 21"></polyline></svg>';
 
   // Fixed presets from the manual's "MOODS" section on the Lights screen.
   // "Magenta"/"Aqua" in the manual map to our closest available options
@@ -666,8 +670,8 @@
             '<div class="all-lights-top-row">' +
               barAdjusterHtml("alllights", 5) +
             '</div>' +
-            '<div class="swatch-grid">' + colorSwatchesHtml("all") + '</div>' +
-            '<div class="advance-row">' +
+            '<div class="swatch-grid-row">' +
+              '<div class="swatch-grid">' + colorSwatchesHtml("all") + '</div>' +
               '<button class="master-btn nav-btn" data-goto="lights-zones">' + ARROW_RIGHT_ICON + '</button>' +
             '</div>' +
           '</div>' +
