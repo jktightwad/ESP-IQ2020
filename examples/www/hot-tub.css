@@ -954,16 +954,16 @@ body {
    source popout) instead of separate full screens - matches the
    physical remote, where these are popouts launched from Home, not
    destinations of their own. Blue-themed like Settings. */
-/* Narrower than the full remaining width so it doesn't reach all the way
-   to the (narrow, correctly-sized) sidebar - leaves a gap that, combined
-   with the sidebar's own width, approximates the reference's "left 1/4
-   is a dimmed, non-actionable region" look while a popout is open. */
+/* Width measured directly off the reference photos: the popout's own
+   body starts at ~27% of the screen width, i.e. it's ~73% wide - not a
+   guess. See #home-popout-cover for what covers the remaining ~27% gap
+   between the (much narrower, ~13%) sidebar and this. */
 .home-popout {
   position: absolute;
   top: 0;
   bottom: 0;
   right: -100%;
-  width: 82cqw;
+  width: 73cqw;
   box-sizing: border-box;
   background: radial-gradient(ellipse at top, #2f7fd6, #123249 75%);
   transition: right 0.2s ease-out;
@@ -975,18 +975,36 @@ body {
   padding: 4cqh 8cqw;
 }
 .home-popout.open { right: 0; }
-/* Belongs to the popout itself (each one has its own), positioned at the
-   popout's own left edge - not a negative offset bleeding past it, since
-   that gets silently clipped by .app-content/.screen's overflow:hidden
-   (needed elsewhere to stop a different layout bug from leaking into a
-   page scrollbar). Sitting flush at this edge still lands it right at
-   the sidebar/content seam, since the sidebar is a true 1/4 of the
-   width and this popout is exactly the remaining 3/4. */
+/* Plugs the gap between the sidebar's right edge and the popout's own
+   left edge (~27% of the screen) with a solid, click-blocking cover -
+   without this, the Home screen's temp tile/feature row (which extend
+   under that whole width) were visible and clickable through the gap
+   while a popout was supposedly covering the screen. Sits behind the
+   popout itself (earlier in the DOM) so the popout still paints on top
+   in the small strip where they overlap under the collapse arrow. */
+.home-popout-cover {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 27cqw;
+  background: #0b1e2d;
+}
+.home-popout-cover.open { display: block; }
+/* Belongs to the popout itself (each one has its own). Pokes left past
+   the popout's own edge into #home-popout-cover's territory - measured
+   off the reference, where the arrow visibly extends further left than
+   the popout body. This is safe from the horizontal-overflow clipping
+   on .app-content/.screen (needed elsewhere to stop a different layout
+   bug) because the popout's own edge sits well inside the screen's
+   positive coordinate space now (~27% in), so poking another ~5% left
+   never goes negative. */
 .home-popout-collapse {
   display: none;
   position: absolute;
   top: 50%;
-  left: 0.5cqh;
+  left: -5cqw;
   transform: translateY(-50%);
   width: 6cqh;
   height: 10cqh;

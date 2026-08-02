@@ -534,21 +534,30 @@
 
   // Memory and Clean Cycle are slide-out popouts over the Home screen
   // (icon rail stays visible, dimmed by a scrim, behind them) rather than
-  // separate full-screen navigations - matches the physical remote, which
-  // shows the popout over the right ~3/4 of the screen and a translucent
-  // (not fully hidden) rail over the left ~1/4. Only one is ever open at
-  // a time. Each popout owns its own collapse arrow (it's part of the
-  // popout, not the sidebar) positioned at the popout's own left edge -
-  // no negative offset needed since that edge already sits right at the
-  // sidebar/content seam once the sidebar is sized to a true 1/4 width.
+  // separate full-screen navigations - matches the physical remote. Only
+  // one is ever open at a time.
+  //
+  // Measured directly off the reference photos (examples/reference/
+  // home_screen) instead of eyeballing a proportion: the popout's own
+  // body starts at ~27% of the screen's width (so it's ~73% wide), while
+  // its collapse arrow pokes further left, down to ~31-35%. The sidebar
+  // itself is much narrower than that 27% (its tiles are correctly sized
+  // already, filling maybe ~13%) - the rest of that gap, in the
+  // reference, is just plain uncovered background, not sidebar. Our
+  // Home screen's temp tile/feature row live underneath that whole
+  // width, so without covering it too, that gap exposed live, clickable
+  // Home content behind the popout. #home-popout-cover plugs exactly
+  // that gap (0 to where the popout body begins) and blocks clicks.
   var HOME_POPOUT_IDS = ["memory-popout", "clean-popout"];
   function openHomePopout(id) {
     HOME_POPOUT_IDS.forEach(function (pid) { q(pid).classList.toggle("open", pid === id); });
     q("app-sidebar").classList.add("popout-open");
+    q("home-popout-cover").classList.add("open");
   }
   function closeHomePopouts() {
     HOME_POPOUT_IDS.forEach(function (pid) { q(pid).classList.remove("open"); });
     q("app-sidebar").classList.remove("popout-open");
+    q("home-popout-cover").classList.remove("open");
   }
 
   function screenHeaderHtml(title, icon, showHome) {
@@ -660,6 +669,7 @@
             '<div class="icon-tile feature-lights" id="tile-lights" data-goto="lights"><span class="glyph">💡</span></div>' +
           '</div>' +
         '</div>' +
+        '<div class="home-popout-cover" id="home-popout-cover"></div>' +
         '<div class="home-popout" id="memory-popout">' +
           '<button class="home-popout-collapse" data-close-popout>◀</button>' +
           '<div class="home-popout-title">Memory:</div>' +
