@@ -1042,16 +1042,30 @@ body {
   font-size: 5.5cqh;
   color: #eaf2f6;
 }
+/* Restore/Save share one width (the reference shows them matching, not
+   each fit to its own shorter/longer label) - a single-column grid
+   naturally sizes its column to the widest item's own intrinsic width,
+   then stretches every item (the default justify-items) to match it,
+   without needing JS to measure and copy one button's width onto the
+   other. Start (Clean Cycle's only button) isn't in a group, so it
+   just uses .home-popout-btn's own fit-content sizing directly. */
+.home-popout-btn-group {
+  display: inline-grid;
+  gap: 2.5cqh;
+}
+.home-popout-btn-group .home-popout-btn { width: auto; }
 .home-popout-btn {
-  /* % of .home-popout's own content box, not cqw (which would resolve
-     against #screen-home's, a different and much wider reference,
-     making the buttons render far wider than the popout they're in).
-     Sized to stay under ~2x the "Memory:"/"Clean Cycle:" label's own
-     width, not an arbitrary fraction of the popout. */
-  width: 35.2%;
-  padding: 2.64cqh 0;
-  border-radius: 1.4cqh;
-  border: 1px solid #3f8fe0;
+  /* Sized off its own label text (fit-content + horizontal padding)
+     instead of a fraction of the popout's box - the previous %-based
+     width was accidentally shrunk back down when the collapse arrow's
+     gap was added, since more of .home-popout's own width became
+     padding, leaving less content box for the % to apply to. Tuned so
+     "RESTORE" (the reference's specific example) lands at ~185% of its
+     own text width. */
+  width: fit-content;
+  padding: 2.64cqh 2.1em;
+  border-radius: 2.4cqh;
+  border: 2px solid #cfe8f7;
   background: #1f6fa8;
   color: #fff;
   font-size: 5.9cqh;

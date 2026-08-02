@@ -673,8 +673,10 @@
         '<div class="home-popout" id="memory-popout">' +
           '<button class="home-popout-collapse" data-close-popout>◀</button>' +
           '<div class="home-popout-title">Memory:</div>' +
-          '<button class="home-popout-btn" id="memory-restore-btn" title="Restore the last saved settings">Restore</button>' +
-          '<button class="home-popout-btn" id="memory-save-btn" title="Save the current settings">Save</button>' +
+          '<div class="home-popout-btn-group">' +
+            '<button class="home-popout-btn" id="memory-restore-btn" title="Restore the last saved settings">Restore</button>' +
+            '<button class="home-popout-btn" id="memory-save-btn" title="Save the current settings">Save</button>' +
+          '</div>' +
         '</div>' +
         '<div class="home-popout" id="clean-popout">' +
           '<button class="home-popout-collapse" data-close-popout>◀</button>' +
