@@ -991,7 +991,10 @@ body {
   align-items: flex-start;
   justify-content: center;
   gap: 2.5cqh;
-  padding: 4cqh 8cqw;
+  /* Extra left padding (vs. the plain 8cqw right/top/bottom) puts a real
+     gap between the collapse arrow and the title/buttons - measured to
+     ~1/4 of the action buttons' own width. */
+  padding: 4cqh 8cqw 4cqh 14cqw;
 }
 .home-popout.open { right: 0; }
 /* Plugs the gap between the sidebar's right edge and the popout's own
@@ -1045,13 +1048,13 @@ body {
      making the buttons render far wider than the popout they're in).
      Sized to stay under ~2x the "Memory:"/"Clean Cycle:" label's own
      width, not an arbitrary fraction of the popout. */
-  width: 32%;
-  padding: 2.4cqh 0;
+  width: 35.2%;
+  padding: 2.64cqh 0;
   border-radius: 1.4cqh;
   border: 1px solid #3f8fe0;
   background: #1f6fa8;
   color: #fff;
-  font-size: 5.4cqh;
+  font-size: 5.9cqh;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
