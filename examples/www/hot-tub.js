@@ -74,6 +74,10 @@
     audioPower: false,
     audioSource: null,
     volume: null,
+    treble: null,
+    bass: null,
+    balance: null,
+    subwoofer: null,
     songTitle: "",
     artistName: "",
     version: ""
@@ -127,6 +131,10 @@
     apiGet("/switch/audio").then(function (d) { state.audioPower = boolFromSwitch(d); renderMusic(); renderHome(); });
     apiGet("/select/audio_source").then(function (d) { state.audioSource = d && d.value; renderMusic(); });
     apiGet("/number/volume").then(function (d) { state.volume = d ? d.value : null; renderMusic(); });
+    apiGet("/number/treble").then(function (d) { state.treble = d ? d.value : null; renderMusic(); });
+    apiGet("/number/bass").then(function (d) { state.bass = d ? d.value : null; renderMusic(); });
+    apiGet("/number/balance").then(function (d) { state.balance = d ? d.value : null; renderMusic(); });
+    apiGet("/number/subwoofer").then(function (d) { state.subwoofer = d ? d.value : null; renderMusic(); });
     apiGet("/text/song_title").then(function (d) { state.songTitle = (d && d.value) || ""; renderMusic(); });
     apiGet("/text/artist_name").then(function (d) { state.artistName = (d && d.value) || ""; renderMusic(); });
 
@@ -189,6 +197,10 @@
     }
     if (domain === "number") {
       if (objectId === "volume") { state.volume = d.value; renderMusic(); return; }
+      if (objectId === "treble") { state.treble = d.value; renderMusic(); return; }
+      if (objectId === "bass") { state.bass = d.value; renderMusic(); return; }
+      if (objectId === "balance") { state.balance = d.value; renderMusic(); return; }
+      if (objectId === "subwoofer") { state.subwoofer = d.value; renderMusic(); return; }
       var zoneN = LIGHT_ZONES.filter(function (z) { return z.intensityId === objectId; })[0];
       if (zoneN) { state.zones[zoneN.key].intensity = d.value; renderLights(); }
       return;
@@ -317,10 +329,22 @@
     q("music-status").style.display = state.audioPower ? "none" : "";
     q("music-body").style.display = state.audioPower ? "" : "none";
     q("source-select-label").textContent = state.audioSource || "--";
+    document.querySelectorAll(".source-option").forEach(function (el) {
+      el.classList.toggle("selected", el.getAttribute("data-source") === state.audioSource);
+    });
     renderSegmentBar("volume", state.volume, 100, 10);
+    q("bass-value").textContent = formatSigned(state.bass);
+    q("treble-value").textContent = formatSigned(state.treble);
+    q("balance-value").textContent = formatSigned(state.balance);
+    q("subwoofer-value").textContent = state.subwoofer != null ? state.subwoofer : "--";
     q("now-playing").textContent = state.songTitle || state.artistName
       ? (state.songTitle + (state.artistName ? " — " + state.artistName : ""))
       : "";
+  }
+
+  function formatSigned(v) {
+    if (v == null) return "--";
+    return v > 0 ? "+" + v : String(v);
   }
 
   // ---- Actions ----
@@ -361,11 +385,8 @@
   // The physical remote shows the current source as a single row you tap
   // to advance (like a dropdown), not a row of always-visible buttons for
   // every option - cycle through them on tap instead.
-  function cycleAudioSource() {
-    var idx = AUDIO_SOURCES.indexOf(state.audioSource);
-    var next = AUDIO_SOURCES[(idx + 1) % AUDIO_SOURCES.length];
-    setSelect("audio_source", next);
-  }
+  function openSourcePopout() { q("source-popout").classList.add("open"); }
+  function closeSourcePopout() { q("source-popout").classList.remove("open"); }
 
   function applyMood(index) {
     var mood = MOODS[index];
@@ -493,7 +514,7 @@
   // just its own content plus a Home icon to jump back.
 
   function showScreen(name) {
-    ["home", "temp", "jets", "lights", "lights-zones", "music", "memory", "clean", "settings", "settings-2"].forEach(function (n) {
+    ["home", "temp", "jets", "lights", "lights-zones", "music", "music-detail", "memory", "clean", "settings", "settings-2"].forEach(function (n) {
       q("screen-" + n).classList.toggle("active", n === name);
     });
     q("app-sidebar").classList.toggle("hidden", name !== "home");
@@ -532,6 +553,21 @@
         '<button class="chev" data-adj-down="' + idPrefix + '">◀</button>' +
         '<div class="segment-bar" id="' + idPrefix + '-bar">' + segmentsHtml(segmentCount) + '</div>' +
         '<button class="chev" data-adj-up="' + idPrefix + '">▶</button>' +
+      '</div>'
+    );
+  }
+
+  // Numeric-value adjuster (chevron / signed number / chevron) with a
+  // label to the right - used for Bass/Treble/Balance/Subwoofer.
+  function numericAdjusterRowHtml(id, label) {
+    return (
+      '<div class="setting-row">' +
+        '<div class="adjuster-pill">' +
+          '<button class="chev" data-adj-down="' + id + '">◀</button>' +
+          '<span class="adjuster-value" id="' + id + '-value">--</span>' +
+          '<button class="chev" data-adj-up="' + id + '">▶</button>' +
+        '</div>' +
+        '<span class="setting-label">' + label + '</span>' +
       '</div>'
     );
   }
@@ -677,7 +713,7 @@
         '</div>' +
       '</div>' +
 
-      '<div class="screen" id="screen-music">' +
+      '<div class="screen music-screen" id="screen-music">' +
         screenHeaderHtml("Music", "🎵") +
         '<div class="music-power-row">' +
           '<span class="music-status" id="music-status">OFF</span>' +
@@ -692,6 +728,28 @@
             '<span id="source-select-label">--</span>' +
             ARROW_RIGHT_ICON +
           '</button>' +
+          '<div class="advance-row">' +
+            '<button class="master-btn nav-btn" data-goto="music-detail">' + ARROW_RIGHT_ICON + '</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="source-popout" id="source-popout">' +
+          '<button class="source-popout-collapse" id="source-popout-collapse">' + ARROW_LEFT_ICON + '</button>' +
+          '<div class="source-popout-title">Select Music Source</div>' +
+          AUDIO_SOURCES.map(function (s) {
+            return '<button class="source-option" data-source="' + s + '">' + s + '</button>';
+          }).join("") +
+        '</div>' +
+      '</div>' +
+
+      '<div class="screen" id="screen-music-detail">' +
+        screenHeaderHtml("Music", "🎵") +
+        numericAdjusterRowHtml("bass", "Bass") +
+        numericAdjusterRowHtml("treble", "Treble") +
+        numericAdjusterRowHtml("balance", "Balance") +
+        numericAdjusterRowHtml("subwoofer", "Subwoofer") +
+        '<div class="range-note">Bass/Treble/Balance won\'t accept negative values set from here - a firmware quirk on the tub\'s side, only shows correctly if set from the physical remote.</div>' +
+        '<div class="advance-row">' +
+          '<button class="master-btn nav-btn" data-goto="music">' + ARROW_LEFT_ICON + '</button>' +
         '</div>' +
       '</div>' +
 
@@ -846,12 +904,34 @@
 
     // Music
     q("music-power-btn").addEventListener("click", function () { toggleSwitch("audio", state.audioPower); });
-    q("source-select-btn").addEventListener("click", cycleAudioSource);
+    q("source-select-btn").addEventListener("click", openSourcePopout);
+    q("source-popout-collapse").addEventListener("click", closeSourcePopout);
+    document.querySelectorAll(".source-option").forEach(function (el) {
+      el.addEventListener("click", function () {
+        setSelect("audio_source", el.getAttribute("data-source"));
+        closeSourcePopout();
+      });
+    });
     document.querySelectorAll("[data-adj-down='volume']").forEach(function (el) {
       el.addEventListener("click", function () { stepNumber("volume", state.volume, -4, 0, 100); });
     });
     document.querySelectorAll("[data-adj-up='volume']").forEach(function (el) {
       el.addEventListener("click", function () { stepNumber("volume", state.volume, 4, 0, 100); });
+    });
+    var MUSIC_ADJUSTERS = {
+      bass: { min: -5, max: 5 },
+      treble: { min: -5, max: 5 },
+      balance: { min: -5, max: 5 },
+      subwoofer: { min: 0, max: 11 }
+    };
+    Object.keys(MUSIC_ADJUSTERS).forEach(function (id) {
+      var range = MUSIC_ADJUSTERS[id];
+      document.querySelectorAll("[data-adj-down='" + id + "']").forEach(function (el) {
+        el.addEventListener("click", function () { stepNumber(id, state[id], -1, range.min, range.max); });
+      });
+      document.querySelectorAll("[data-adj-up='" + id + "']").forEach(function (el) {
+        el.addEventListener("click", function () { stepNumber(id, state[id], 1, range.min, range.max); });
+      });
     });
   }
 

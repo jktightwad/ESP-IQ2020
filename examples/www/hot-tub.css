@@ -122,7 +122,7 @@ body {
    keep the default theme automatically. */
 #screen-jets { --accent: #a855f7; --accent-soft: #3b1064; background: radial-gradient(ellipse at top, #4c1d95, #1e0a3c 75%); }
 #screen-lights, #screen-lights-zones { --accent: #ef4444; --accent-soft: #5c1414; background: radial-gradient(ellipse at top, #7f1d1d, #2a0a0a 75%); }
-#screen-music { --accent: #22c55e; --accent-soft: #14401f; background: radial-gradient(ellipse at top, #14532d, #06210f 75%); }
+#screen-music, #screen-music-detail { --accent: #22c55e; --accent-soft: #14401f; background: radial-gradient(ellipse at top, #14532d, #06210f 75%); }
 #screen-temp { background: radial-gradient(ellipse at top, #2f7fd6, #123249 75%); }
 
 /* Every non-Home screen has this header instead of a persistent tab bar
@@ -249,11 +249,14 @@ body {
   color: #dff2ff;
   /* .unit inherits .value's negative letter-spacing by default, which
      was pulling "F" right up against the last digit - reset it and add
-     a bit of breathing room instead. Align to the top of the line
-     instead of the baseline, like a superscript. */
+     a bit of breathing room instead. vertical-align:top put it flush
+     against the very top of the line - nudge it down by about half its
+     own height instead of sitting right at the top edge. */
   letter-spacing: normal;
   margin-left: 0.15em;
   vertical-align: top;
+  position: relative;
+  top: 0.5em;
 }
 
 /* Feature icons are square, sized to match the temp tile's height above
@@ -341,6 +344,11 @@ body {
   background: #274a5e;
   color: #6a8a9a;
   cursor: not-allowed;
+}
+.range-note {
+  font-size: 2.5cqh;
+  color: #7fa8bf;
+  text-align: center;
 }
 
 /* Settings-style rows: a chevron/segment or OFF-ON control on the left,
@@ -430,6 +438,11 @@ body {
   background: #274a5e;
 }
 .segment.filled { background: var(--accent, #1f6fa8); }
+.adjuster-value {
+  min-width: 6cqw;
+  text-align: center;
+  font-size: 3.2cqh;
+}
 
 /* Jets screen - the power button sits to the right of both rows (like
    the physical remote), vertically centered, instead of below them. */
@@ -706,14 +719,22 @@ body {
 }
 
 /* Music screen - power button sits on the right, matching the reference. */
+/* margin-left:auto on the button (not justify-content:space-between on
+   the row) keeps it pinned to the right whether or not .music-status is
+   visible - space-between only pushes it right when there are 2 flex
+   items, so it snapped to the left once .music-status got display:none
+   on power-on. */
 .music-power-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 3cqw;
   margin-bottom: 2cqh;
 }
 .music-status {
+  flex: 1;
+  text-align: right;
+  padding: 1cqh 2cqw;
+  background: rgba(0,0,0,0.15);
   font-size: 3cqh;
   color: #9cd0ec;
   letter-spacing: 0.08em;
@@ -722,11 +743,70 @@ body {
   width: 28cqh;
   height: 28cqh;
   font-size: 12cqh;
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
-/* Source "dropdown" - a single row showing the current value plus an
-   arrow, cycling through options on tap, instead of a button per option
-   always visible at once. */
+/* A real popout panel for source selection (matching the manual), not
+   a set of always-visible pill buttons - it slides in over the right
+   side of the screen and is dismissed with its own collapse button. */
+.music-screen { position: relative; overflow: hidden; }
+.source-popout {
+  position: absolute;
+  top: 0;
+  right: -100%;
+  bottom: 0;
+  width: 58%;
+  background: rgba(4, 26, 14, 0.98);
+  border-left: 1px solid rgba(255,255,255,0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 1cqh;
+  padding: 3cqh 3cqw;
+  transition: right 0.2s ease-out;
+  z-index: 5;
+}
+.source-popout.open { right: 0; }
+.source-popout-title {
+  font-size: 2.6cqh;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #9cd0ec;
+  margin-bottom: 1cqh;
+}
+.source-option {
+  padding: 1.5cqh 2cqw;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.3);
+  background: transparent;
+  color: #fff;
+  font-size: 3cqh;
+  text-align: left;
+  cursor: pointer;
+}
+.source-option.selected {
+  background: rgba(255,255,255,0.18);
+  border-color: #fff;
+}
+.source-popout-collapse {
+  position: absolute;
+  left: -6cqh;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10cqh;
+  height: 10cqh;
+  border-radius: 50%;
+  border: none;
+  background: #123249;
+  color: #fff;
+  font-size: 4.5cqh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* Source "current value" row - tap to open the popout above. */
 .source-select {
   display: flex;
   align-items: center;
