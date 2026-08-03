@@ -48,17 +48,6 @@
   var ARROW_RIGHT_ICON = '<svg viewBox="0 0 48 24" width="2.4em" height="1.1em" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="2" y1="12" x2="36" y2="12"></line><polyline points="27 3 44 12 27 21"></polyline></svg>';
   var ARROW_LEFT_ICON = '<svg viewBox="0 0 48 24" width="2.4em" height="1.1em" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="46" y1="12" x2="12" y2="12"></line><polyline points="21 3 4 12 21 21"></polyline></svg>';
 
-  // The wide page-navigation buttons (.nav-btn - Lights/Music/Settings
-  // forward/back) use the real font-rendered arrow characters instead of
-  // the hand-drawn SVGs above, matching the reference screenshots' clean
-  // system-drawn look. The .glyph wrapper is required for the
-  // .nav-btn .glyph CSS rule that recenters them - the system font stack
-  // draws "→"/"←" sitting visibly low in their own line box, and that nudge
-  // has to land on an inner element rather than the button itself (see the
-  // CSS comment).
-  var NAV_ARROW_RIGHT = '<span class="glyph">→</span>';
-  var NAV_ARROW_LEFT = '<span class="glyph">←</span>';
-
   // Fixed presets from the manual's "MOODS" section on the Lights screen.
   // "Magenta"/"Aqua" in the manual map to our closest available options
   // (Violet/Cyan) since those are the exact colors the component supports.
@@ -765,7 +754,7 @@
             '</div>' +
             '<div class="swatch-grid-row">' +
               '<div class="swatch-grid">' + colorSwatchesHtml("all") + '</div>' +
-              '<button class="master-btn nav-btn" data-goto="lights-zones">' + NAV_ARROW_RIGHT + '</button>' +
+              '<button class="master-btn nav-btn" data-goto="lights-zones">' + ARROW_RIGHT_ICON + '</button>' +
             '</div>' +
           '</div>' +
         '</div>' +
@@ -787,7 +776,7 @@
           '</div>' +
         '</div>' +
         '<div class="advance-row">' +
-          '<button class="master-btn nav-btn" data-goto="lights">' + NAV_ARROW_LEFT + '</button>' +
+          '<button class="master-btn nav-btn" data-goto="lights">' + ARROW_LEFT_ICON + '</button>' +
         '</div>' +
       '</div>' +
 
@@ -819,7 +808,7 @@
               '<span id="source-select-label">--</span>' +
               ARROW_RIGHT_ICON +
             '</button>' +
-            '<button class="master-btn nav-btn" data-goto="music-detail">' + NAV_ARROW_RIGHT + '</button>' +
+            '<button class="master-btn nav-btn" data-goto="music-detail">' + ARROW_RIGHT_ICON + '</button>' +
           '</div>' +
         '</div>' +
         '<div class="source-popout" id="source-popout">' +
@@ -839,7 +828,7 @@
         numericAdjusterRowHtml("subwoofer", "Subwoofer") +
         '<div class="range-note">Bass/Treble/Balance won\'t accept negative values set from here - a firmware quirk on the tub\'s side, only shows correctly if set from the physical remote.</div>' +
         '<div class="advance-row">' +
-          '<button class="master-btn nav-btn" data-goto="music">' + NAV_ARROW_LEFT + '</button>' +
+          '<button class="master-btn nav-btn" data-goto="music">' + ARROW_LEFT_ICON + '</button>' +
         '</div>' +
       '</div>' +
 
@@ -854,7 +843,7 @@
           '<div class="setting-group">' +
             onOffRowHtml("summer", "Summer Timer") +
           '</div>' +
-          '<button class="master-btn nav-btn settings-nav-btn" data-goto="settings-2">' + NAV_ARROW_RIGHT + '</button>' +
+          '<button class="master-btn nav-btn settings-nav-btn" data-goto="settings-2">' + ARROW_RIGHT_ICON + '</button>' +
         '</div>' +
       '</div>' +
 
@@ -880,7 +869,7 @@
             '</button>' +
             '<div class="settings-version-caption">Version <span id="settings-version">--</span></div>' +
           '</div>' +
-          '<button class="master-btn nav-btn settings-nav-btn" data-goto="settings">' + NAV_ARROW_LEFT + '</button>' +
+          '<button class="master-btn nav-btn settings-nav-btn" data-goto="settings">' + ARROW_LEFT_ICON + '</button>' +
         '</div>' +
       '</div>' +
 

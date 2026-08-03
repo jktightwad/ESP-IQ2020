@@ -596,26 +596,16 @@ body {
 }
 /* Page-navigation arrows (next/previous screen) are wide rounded
    rectangles with a big arrow on the physical remote, unlike the
-   circular power buttons that share this same base height/color. */
+   circular power buttons that share this same base height/color.
+   font-size here drives the ARROW_RIGHT_ICON/ARROW_LEFT_ICON SVG's own
+   width:2.4em/height:1.1em sizing - kept low enough that a 2.4em-wide
+   icon still fits inside this button's 26cqh width with room to spare. */
 .master-btn.nav-btn {
   width: 26cqh;
   border-radius: 20%;
-  font-size: 15cqh;
+  font-size: 9cqh;
   background: #1a1a1a;
   border: 2px solid #fff;
-}
-/* The system sans-serif stack draws "→"/"←" sitting low within their own
-   line box - measured directly via canvas glyph metrics and confirmed by
-   pixel-diffing a rendered screenshot: the glyph's ink center sits ~18.3%
-   of the font-size below the box's true center, consistently regardless
-   of button/font size (it's a font-metric constant, not a sizing
-   artifact). Flexbox centering on the button can't fix this since it
-   centers the line box, not the glyph's ink, so the nudge goes on this
-   inner span instead of the button itself (transforming the button would
-   drag its border/background out of place along with the glyph). */
-.master-btn.nav-btn .glyph {
-  display: block;
-  transform: translateY(-0.183em);
 }
 
 .speed-buttons {
