@@ -829,10 +829,10 @@
           // when the matching button is pressed on the tub's own wired
           // remote, via the "buttons" sensor - that part is confirmed working.
           '<div class="transport-row">' +
-            '<button class="transport-btn" id="transport-btn-4" data-audio-button="audio_back">' + SKIP_BACK_ICON + '</button>' +
-            '<button class="transport-btn" id="transport-btn-1" data-audio-button="audio_play">' + PLAY_ICON + '</button>' +
-            '<button class="transport-btn" id="transport-btn-2" data-audio-button="audio_pause">' + PAUSE_ICON + '</button>' +
-            '<button class="transport-btn" id="transport-btn-3" data-audio-button="audio_next">' + SKIP_FORWARD_ICON + '</button>' +
+            '<button class="transport-btn" id="transport-btn-4" data-audio-button="back">' + SKIP_BACK_ICON + '</button>' +
+            '<button class="transport-btn" id="transport-btn-1" data-audio-button="play">' + PLAY_ICON + '</button>' +
+            '<button class="transport-btn" id="transport-btn-2" data-audio-button="pause">' + PAUSE_ICON + '</button>' +
+            '<button class="transport-btn" id="transport-btn-3" data-audio-button="next">' + SKIP_FORWARD_ICON + '</button>' +
           '</div>' +
           barAdjusterHtml("volume", 16) +
           '<div class="source-row">' +
