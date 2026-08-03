@@ -1416,6 +1416,35 @@ void IQ2020Component::buttonAction(unsigned int buttonid) {
 		cmd[8] = 0x01; // 01 01 FF FF
 		sendIQ2020Command(0x29, 0x01, 0x40, cmd, sizeof(cmd));
 		break;
+	// Per documentation/protocol.md: "01 1F 40 1900 02xx - Set Play/Pause/Next/Back",
+	// same command family (and same spoofed-0x1F relay path) already confirmed
+	// working on real hardware for Audio on/off and Volume/Treble/Bass/Balance/
+	// Subwoofer. Untested against real playback as of this writing - the physical
+	// remote that could otherwise confirm the byte values is not usable.
+	case BUTTON_AUDIO_PLAY:
+	{
+		unsigned char audioCmd[] = { 0x19, 0x00, 0x02, 0x01 };
+		sendIQ2020Command(0x01, 0x1F, 0x40, audioCmd, sizeof(audioCmd));
+		return; // Don't fall through to the salt-system retry/poll logic below.
+	}
+	case BUTTON_AUDIO_PAUSE:
+	{
+		unsigned char audioCmd[] = { 0x19, 0x00, 0x02, 0x02 };
+		sendIQ2020Command(0x01, 0x1F, 0x40, audioCmd, sizeof(audioCmd));
+		return;
+	}
+	case BUTTON_AUDIO_NEXT:
+	{
+		unsigned char audioCmd[] = { 0x19, 0x00, 0x02, 0x03 };
+		sendIQ2020Command(0x01, 0x1F, 0x40, audioCmd, sizeof(audioCmd));
+		return;
+	}
+	case BUTTON_AUDIO_BACK:
+	{
+		unsigned char audioCmd[] = { 0x19, 0x00, 0x02, 0x04 };
+		sendIQ2020Command(0x01, 0x1F, 0x40, audioCmd, sizeof(audioCmd));
+		return;
+	}
 	default:
 		return;
 	}

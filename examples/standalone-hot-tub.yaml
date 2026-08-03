@@ -265,6 +265,29 @@ text:
     datapoint: 1
     mode: text
 
+# Sends "01 1F 40 1900 02xx" per documentation/protocol.md - untested
+# against real playback (the physical remote that could confirm the byte
+# values isn't usable), unlike every other audio command above which is
+# confirmed working on real hardware. See the comment in
+# IQ2020Component::buttonAction() in iq2020.cpp.
+button:
+  - platform: iq2020
+    name: Play
+    id: audio_play
+    datapoint: 3
+  - platform: iq2020
+    name: Pause
+    id: audio_pause
+    datapoint: 4
+  - platform: iq2020
+    name: Next
+    id: audio_next
+    datapoint: 5
+  - platform: iq2020
+    name: Back
+    id: audio_back
+    datapoint: 6
+
 fan:
   - platform: iq2020
     name: Jets 1

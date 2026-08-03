@@ -803,16 +803,16 @@
             '<div class="now-playing-row"><span class="now-playing-label">Song:</span><span id="now-playing-song"></span></div>' +
             '<div class="now-playing-row"><span class="now-playing-label">Artist:</span><span id="now-playing-artist"></span></div>' +
           '</div>' +
-          // The IQ2020 audio protocol only carries transport button presses
-          // one direction: real remote -> spa controller -> "buttons" sensor.
-          // There's no command that goes the other way, so these can't be
-          // tapped to control playback - instead they light up live when the
-          // button is actually pressed on the tub's own wired remote.
+          // Send "01 1F 40 1900 02xx" per documentation/protocol.md - unverified
+          // against real playback as of this writing (see the comment in
+          // IQ2020Component::buttonAction()). They also still light up live
+          // when the matching button is pressed on the tub's own wired
+          // remote, via the "buttons" sensor - that part is confirmed working.
           '<div class="transport-row">' +
-            '<span class="transport-btn" id="transport-btn-4">⏮</span>' +
-            '<span class="transport-btn" id="transport-btn-1">▶</span>' +
-            '<span class="transport-btn" id="transport-btn-2">⏸</span>' +
-            '<span class="transport-btn" id="transport-btn-3">⏭</span>' +
+            '<button class="transport-btn" id="transport-btn-4" data-audio-button="audio_back">⏮</button>' +
+            '<button class="transport-btn" id="transport-btn-1" data-audio-button="audio_play">▶</button>' +
+            '<button class="transport-btn" id="transport-btn-2" data-audio-button="audio_pause">⏸</button>' +
+            '<button class="transport-btn" id="transport-btn-3" data-audio-button="audio_next">⏭</button>' +
           '</div>' +
           barAdjusterHtml("volume", 16) +
           '<div class="source-row">' +
@@ -996,6 +996,9 @@
 
     // Music
     q("music-power-btn").addEventListener("click", function () { toggleSwitch("audio", state.audioPower); });
+    document.querySelectorAll("[data-audio-button]").forEach(function (el) {
+      el.addEventListener("click", function () { apiPost("/button/" + el.getAttribute("data-audio-button") + "/press"); });
+    });
     q("source-select-btn").addEventListener("click", openSourcePopout);
     q("source-popout-collapse").addEventListener("click", closeSourcePopout);
     document.querySelectorAll(".source-option").forEach(function (el) {

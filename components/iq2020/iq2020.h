@@ -63,10 +63,14 @@
 #define NUMBER_LIGHTS2_INTENSITY 8     // Bartop lights intensity (0 to 5)
 #define NUMBER_LIGHTS3_INTENSITY 9     // Pillow lights intensity (0 to 5)
 #define NUMBER_LIGHTS4_INTENSITY 10    // Exterior lights intensity (0 to 5)
-#define BUTTONCOUNT 3
+#define BUTTONCOUNT 7
 #define BUTTON_SALT_TEST 0
 #define BUTTON_RESET_CARTRIDGE 1
 #define BUTTON_CONFIRM_MANUAL_TEST 2
+#define BUTTON_AUDIO_PLAY 3
+#define BUTTON_AUDIO_PAUSE 4
+#define BUTTON_AUDIO_NEXT 5
+#define BUTTON_AUDIO_BACK 6
 #define NOT_SET -127
 
 class IQ2020Component : public esphome::Component {
