@@ -458,8 +458,8 @@
   }
 
   // Sidebar Power button - documented behavior: if jets/lights/music are
-  // all off, turn jets on high and lights on blue; if anything's on, turn
-  // jets, lights, and music all off.
+  // all off, turn Pump 1 (jets_1) on and lights on blue; if anything's on,
+  // turn jets, lights, and music all off.
   function globalPowerToggle() {
     var anyOn = state.jets1 || state.jets2Level > 0 || state.lights || state.audioPower;
     if (anyOn) {
@@ -469,7 +469,6 @@
       if (state.audioPower) toggleSwitch("audio", true);
     } else {
       apiPost("/fan/jets_1/turn_on");
-      apiPost("/fan/jets_2/turn_on", { speed_level: 2 });
       if (!state.lights) toggleSwitch("lights", false);
       LIGHT_ZONES.forEach(function (z) { setSelect(z.colorId, "Blue"); });
     }

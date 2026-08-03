@@ -668,8 +668,15 @@ int IQ2020Component::processIQ2020Command() {
 		if ((cmdlen == 19) && (processingBuffer[5] == 0x19) && (processingBuffer[6] == 0x01)) {
 			if (got_audio_data < 5) { got_audio_data = 5; pollState(); }
 
-			// Status of audio module
-			setSwitchState(SWITCH_AUDIO_POWER, processingBuffer[7]); // Audio Power Status
+			// Status of audio module. processingBuffer[7] is 1=On, 2=Off - not a
+			// plain boolean - so it must be normalized the same way the other
+			// audio power update above (Audio Module -> IQ2020 Response) does.
+			// Passing the raw value through here made "Off" (2) publish as ON,
+			// since setSwitchState()/publish_state() treats any nonzero value
+			// as on - this is what caused Audio to appear to turn itself back
+			// on shortly after being turned off, since this status broadcast
+			// fires as part of routine polling.
+			setSwitchState(SWITCH_AUDIO_POWER, (int)(processingBuffer[7] == 0x1)); // Audio Power Status
 #ifdef USE_IQ2020_SELECT
 			setSelectState(SELECT_AUDIO_SOURCE, processingBuffer[14]); // Audio Source
 #endif
