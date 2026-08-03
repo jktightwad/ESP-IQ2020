@@ -411,7 +411,14 @@
   }
 
   function stepNumber(objectId, current, delta, min, max) {
-    var v = Math.max(min, Math.min(max, (current || 0) + delta));
+    // number entities report their value as a string (confirmed via a heap
+    // snapshot: state.volume was "100", not 100) - "+" on a string
+    // concatenates instead of adding, so e.g. "100" + -4 produced the
+    // unparseable string "100-4" (NaN once clamped) while "100" + 4 only
+    // "worked" by accident because "1004" still clamped back down to a
+    // valid number. Coerce explicitly so both directions add correctly
+    // regardless of whether current is a string or number.
+    var v = Math.max(min, Math.min(max, (Number(current) || 0) + delta));
     apiPost("/number/" + objectId + "/set", { value: v });
   }
 
