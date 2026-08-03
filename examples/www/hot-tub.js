@@ -126,8 +126,8 @@
     apiGet("/switch/temperature_lock").then(function (d) { state.tempLock = boolFromSwitch(d); renderSettings(); renderHome(); });
     apiGet("/switch/summer_timer").then(function (d) { state.summerTimer = boolFromSwitch(d); renderSettings(); renderHome(); });
     apiGet("/switch/clean_cycle").then(function (d) { state.cleanCycle = boolFromSwitch(d); renderClean(); renderHome(); });
-    apiGet("/fan/jets_1").then(function (d) { state.jets1 = d && d.state === "ON"; renderJets(); });
-    apiGet("/fan/jets_2").then(function (d) { state.jets2Level = (d && d.speed_level) ? d.speed_level : 0; renderJets(); });
+    apiGet("/fan/jets_1").then(function (d) { state.jets1 = d && d.state === "ON"; renderJets(); renderHome(); });
+    apiGet("/fan/jets_2").then(function (d) { state.jets2Level = (d && d.speed_level) ? d.speed_level : 0; renderJets(); renderHome(); });
 
     // Lights detail
     LIGHT_ZONES.forEach(function (z) {
