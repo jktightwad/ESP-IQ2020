@@ -46,6 +46,18 @@
   var ARROW_RIGHT_ICON = '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>';
   var ARROW_LEFT_ICON = '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>';
 
+  // Feather Icons' real play/pause/skip-back/skip-forward (same set as the
+  // arrows and power icon above) - the transport row previously used plain
+  // Unicode symbols (⏮▶⏸⏭), which some platforms render as full-color
+  // emoji and others as plain monochrome glyphs (the "yellow icon on
+  // mobile, plain on desktop" inconsistency) - same root cause as the nav
+  // arrow centering issue earlier, just showing up as a style mismatch
+  // instead of a position one. SVG renders identically everywhere.
+  var PLAY_ICON = '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>';
+  var PAUSE_ICON = '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>';
+  var SKIP_BACK_ICON = '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><polygon points="19 20 9 12 19 4 19 20"></polygon><rect x="4" y="4" width="2" height="16"></rect></svg>';
+  var SKIP_FORWARD_ICON = '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><polygon points="5 4 15 12 5 20 5 4"></polygon><rect x="18" y="4" width="2" height="16"></rect></svg>';
+
   // Fixed presets from the manual's "MOODS" section on the Lights screen.
   // "Magenta"/"Aqua" in the manual map to our closest available options
   // (Violet/Cyan) since those are the exact colors the component supports.
@@ -817,10 +829,10 @@
           // when the matching button is pressed on the tub's own wired
           // remote, via the "buttons" sensor - that part is confirmed working.
           '<div class="transport-row">' +
-            '<button class="transport-btn" id="transport-btn-4" data-audio-button="audio_back">⏮</button>' +
-            '<button class="transport-btn" id="transport-btn-1" data-audio-button="audio_play">▶</button>' +
-            '<button class="transport-btn" id="transport-btn-2" data-audio-button="audio_pause">⏸</button>' +
-            '<button class="transport-btn" id="transport-btn-3" data-audio-button="audio_next">⏭</button>' +
+            '<button class="transport-btn" id="transport-btn-4" data-audio-button="audio_back">' + SKIP_BACK_ICON + '</button>' +
+            '<button class="transport-btn" id="transport-btn-1" data-audio-button="audio_play">' + PLAY_ICON + '</button>' +
+            '<button class="transport-btn" id="transport-btn-2" data-audio-button="audio_pause">' + PAUSE_ICON + '</button>' +
+            '<button class="transport-btn" id="transport-btn-3" data-audio-button="audio_next">' + SKIP_FORWARD_ICON + '</button>' +
           '</div>' +
           barAdjusterHtml("volume", 16) +
           '<div class="source-row">' +
