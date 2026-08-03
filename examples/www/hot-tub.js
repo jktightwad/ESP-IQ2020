@@ -85,6 +85,13 @@
   LIGHT_ZONES.forEach(function (z) { state.zones[z.key] = { color: null, intensity: null }; });
   state.displayBrightness = loadDisplayBrightness();
 
+  // Debug hook - state is otherwise trapped inside this IIFE's closure with
+  // no way to inspect it from the browser console. Run
+  // JSON.stringify(window.HOTTUB_STATE) in DevTools any time to see the
+  // page's live view of every entity, exact numbers included (unlike a
+  // heap snapshot, which can't recover primitive number values).
+  window.HOTTUB_STATE = state;
+
   function fToC(f) { return (f - 32) * 5 / 9; }
 
   function apiGet(path) {
