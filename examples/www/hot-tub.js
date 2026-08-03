@@ -171,6 +171,7 @@
     if (domain === "sensor") {
       if (objectId === "current_temperature" && typeof d.value === "number") { state.currentTempF = d.value; renderHome(); renderTemp(); }
       else if (objectId === "target_temperature" && typeof d.value === "number") { state.targetTempF = d.value; renderHome(); renderTemp(); }
+      else if (objectId === "buttons" && typeof d.value === "number") { flashTransportButton(d.value); }
       return;
     }
     if (domain === "switch") {
@@ -360,6 +361,26 @@
     q("subwoofer-value").textContent = state.subwoofer != null ? state.subwoofer : "--";
     q("now-playing-song").textContent = state.songTitle || "";
     q("now-playing-artist").textContent = state.artistName || "";
+  }
+
+  // Pulses the matching transport glyph when the "buttons" sensor reports a
+  // real press (1=Play, 2=Pause, 3=Next, 4=Back) from the tub's own wired
+  // remote - see the transport-row comment in buildScreens() for why these
+  // can only ever be lit up, never tapped to send a command themselves.
+  function flashTransportButton(value) {
+    var el = q("transport-btn-" + value);
+    if (!el) return;
+    el.classList.add("active");
+    setTimeout(function () { el.classList.remove("active"); }, 400);
+  }
+
+  function editNowPlaying(objectId, current, label) {
+    var next = window.prompt("Set " + label + " (shown on the tub's own remote too):", current || "");
+    if (next === null) return; // cancelled
+    next = next.slice(0, 20); // IQ2020 text datapoints are 20 characters max
+    if (objectId === "song_title") { state.songTitle = next; } else { state.artistName = next; }
+    renderMusic();
+    apiPost("/text/" + objectId + "/set", { value: next });
   }
 
   function formatSigned(v) {
@@ -776,18 +797,20 @@
         '</div>' +
         '<div class="music-body" id="music-body">' +
           '<div class="now-playing-block">' +
-            '<div class="now-playing-row"><span class="now-playing-label">Song:</span><span id="now-playing-song"></span></div>' +
-            '<div class="now-playing-row"><span class="now-playing-label">Artist:</span><span id="now-playing-artist"></span></div>' +
+            '<div class="now-playing-row editable" id="now-playing-song-row"><span class="now-playing-label">Song:</span><span id="now-playing-song"></span></div>' +
+            '<div class="now-playing-row editable" id="now-playing-artist-row"><span class="now-playing-label">Artist:</span><span id="now-playing-artist"></span></div>' +
           '</div>' +
-          // Decorative only - the IQ2020 hardware has no transport-control
-          // mechanism (its "button" datapoints are salt-system maintenance
-          // actions, unrelated to audio), so these can't actually control
-          // playback. Included to match the physical remote's layout.
+          // The IQ2020 audio protocol only carries transport button presses
+          // one direction: real remote -> spa controller -> "buttons" sensor.
+          // There's no command that goes the other way, so these can't be
+          // tapped to control playback - instead they light up live when the
+          // button is actually pressed on the tub's own wired remote
+          // (requires audio_emulation: true - see documentation/audio.md).
           '<div class="transport-row">' +
-            '<span class="transport-btn">⏮</span>' +
-            '<span class="transport-btn">▶</span>' +
-            '<span class="transport-btn">⏸</span>' +
-            '<span class="transport-btn">⏭</span>' +
+            '<span class="transport-btn" id="transport-btn-4">⏮</span>' +
+            '<span class="transport-btn" id="transport-btn-1">▶</span>' +
+            '<span class="transport-btn" id="transport-btn-2">⏸</span>' +
+            '<span class="transport-btn" id="transport-btn-3">⏭</span>' +
           '</div>' +
           barAdjusterHtml("volume", 16) +
           '<div class="source-row">' +
@@ -971,6 +994,8 @@
 
     // Music
     q("music-power-btn").addEventListener("click", function () { toggleSwitch("audio", state.audioPower); });
+    q("now-playing-song-row").addEventListener("click", function () { editNowPlaying("song_title", state.songTitle, "Song"); });
+    q("now-playing-artist-row").addEventListener("click", function () { editNowPlaying("artist_name", state.artistName, "Artist"); });
     q("source-select-btn").addEventListener("click", openSourcePopout);
     q("source-popout-collapse").addEventListener("click", closeSourcePopout);
     document.querySelectorAll(".source-option").forEach(function (el) {

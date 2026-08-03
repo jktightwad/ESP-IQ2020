@@ -580,6 +580,10 @@ body {
   border-color: #fff;
 }
 .master-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
   width: 14cqh;
   height: 14cqh;
   border-radius: 50%;
@@ -810,10 +814,17 @@ body {
   letter-spacing: 0.04em;
   margin-right: 0.6em;
 }
+/* Song/Artist are real writable datapoints under audio_emulation - tapping
+   a row prompts for new text and pushes it to the tub's own remote too. */
+.now-playing-row.editable {
+  cursor: pointer;
+}
 
-/* Decorative transport row (see the comment at its markup for why these
-   don't do anything) - sized to match the other icon buttons on this
-   screen instead of the default text-button styling. */
+/* Transport row (see the comment at its markup for why these can't be
+   tapped to control playback) - sized to match the other icon buttons on
+   this screen instead of the default text-button styling. They flash via
+   .active when the "buttons" sensor reports a real press on the tub's own
+   wired remote. */
 .transport-row {
   display: flex;
   gap: 3cqw;
@@ -831,6 +842,11 @@ body {
   align-items: center;
   justify-content: center;
   cursor: default;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.transport-btn.active {
+  background: var(--accent, #1f6fa8);
+  border-color: #fff;
 }
 
 /* Music screen - power button sits under the OFF banner, on the right.

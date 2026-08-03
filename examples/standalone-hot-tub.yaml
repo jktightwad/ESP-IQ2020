@@ -112,6 +112,12 @@ iq2020:
   uart_id: SpaConnection
   flow_control_pin: GPIO21
   polling_rate: 65
+  # This build has no real factory audio module, so the ESP emulates one -
+  # this is what makes the Audio switch/Volume/Song/Artist entities below
+  # actually do something instead of sitting there unpopulated, and makes
+  # the "buttons" sensor pulse for real remote presses. See
+  # documentation/audio.md.
+  audio_emulation: true
   # Optional raw RS485 traffic viewer port for the IQ2020 DataViewer tool
   # (see DataViewer/) - useful for debugging, has nothing to do with HA.
   port: 1234
@@ -164,7 +170,8 @@ switch:
     id: summer_timer_switch
     icon: "mdi:sun-clock"
     datapoint: 4
-  # Real Bluetooth/subwoofer audio module - see documentation/audio.md
+  # Emulated audio module (audio_emulation: true above) - no factory
+  # stereo required. See documentation/audio.md.
   - platform: iq2020
     name: Audio
     id: audio_power
@@ -254,16 +261,19 @@ number:
     maximum: 5
 
 text:
+  # Writable - shows up on the tub's own physical remote too, not just here.
   - platform: iq2020
     name: Song Title
     id: song_title
     datapoint: 0
     mode: text
+    value: "No Music Playing"
   - platform: iq2020
     name: Artist Name
     id: artist_name
     datapoint: 1
     mode: text
+    value: ""
 
 fan:
   - platform: iq2020
