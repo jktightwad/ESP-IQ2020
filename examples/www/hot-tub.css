@@ -814,12 +814,6 @@ body {
   letter-spacing: 0.04em;
   margin-right: 0.6em;
 }
-/* Song/Artist are real writable datapoints under audio_emulation - tapping
-   a row prompts for new text and pushes it to the tub's own remote too. */
-.now-playing-row.editable {
-  cursor: pointer;
-}
-
 /* Transport row (see the comment at its markup for why these can't be
    tapped to control playback) - sized to match the other icon buttons on
    this screen instead of the default text-button styling. They flash via

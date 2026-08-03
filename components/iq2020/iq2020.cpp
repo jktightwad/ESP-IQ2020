@@ -482,6 +482,20 @@ int IQ2020Component::processIQ2020Command() {
 				// These are currently processed as part of the REQ from IQ to Audio Module
 				// TODO: Should they be processed here instead? That will likely effect the AM emulation
 			}
+			else if (processingBuffer[6] == 0x06) { // Song title, reported by a real audio module
+#ifdef USE_IQ2020_TEXT
+				if (g_iq2020_text[TEXT_SONG_TITLE] != NULL) {
+					g_iq2020_text[TEXT_SONG_TITLE]->set_value(std::string((const char*)processingBuffer + 7, cmdlen - 8));
+				}
+#endif
+			}
+			else if (processingBuffer[6] == 0x07) { // Artist name, reported by a real audio module
+#ifdef USE_IQ2020_TEXT
+				if (g_iq2020_text[TEXT_ARTIST_NAME] != NULL) {
+					g_iq2020_text[TEXT_ARTIST_NAME]->set_value(std::string((const char*)processingBuffer + 7, cmdlen - 8));
+				}
+#endif
+			}
 		}
 	}
 

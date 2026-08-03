@@ -374,15 +374,6 @@
     setTimeout(function () { el.classList.remove("active"); }, 400);
   }
 
-  function editNowPlaying(objectId, current, label) {
-    var next = window.prompt("Set " + label + " (shown on the tub's own remote too):", current || "");
-    if (next === null) return; // cancelled
-    next = next.slice(0, 20); // IQ2020 text datapoints are 20 characters max
-    if (objectId === "song_title") { state.songTitle = next; } else { state.artistName = next; }
-    renderMusic();
-    apiPost("/text/" + objectId + "/set", { value: next });
-  }
-
   function formatSigned(v) {
     if (v == null) return "--";
     return v > 0 ? "+" + v : String(v);
@@ -797,15 +788,14 @@
         '</div>' +
         '<div class="music-body" id="music-body">' +
           '<div class="now-playing-block">' +
-            '<div class="now-playing-row editable" id="now-playing-song-row"><span class="now-playing-label">Song:</span><span id="now-playing-song"></span></div>' +
-            '<div class="now-playing-row editable" id="now-playing-artist-row"><span class="now-playing-label">Artist:</span><span id="now-playing-artist"></span></div>' +
+            '<div class="now-playing-row"><span class="now-playing-label">Song:</span><span id="now-playing-song"></span></div>' +
+            '<div class="now-playing-row"><span class="now-playing-label">Artist:</span><span id="now-playing-artist"></span></div>' +
           '</div>' +
           // The IQ2020 audio protocol only carries transport button presses
           // one direction: real remote -> spa controller -> "buttons" sensor.
           // There's no command that goes the other way, so these can't be
           // tapped to control playback - instead they light up live when the
-          // button is actually pressed on the tub's own wired remote
-          // (requires audio_emulation: true - see documentation/audio.md).
+          // button is actually pressed on the tub's own wired remote.
           '<div class="transport-row">' +
             '<span class="transport-btn" id="transport-btn-4">⏮</span>' +
             '<span class="transport-btn" id="transport-btn-1">▶</span>' +
@@ -994,8 +984,6 @@
 
     // Music
     q("music-power-btn").addEventListener("click", function () { toggleSwitch("audio", state.audioPower); });
-    q("now-playing-song-row").addEventListener("click", function () { editNowPlaying("song_title", state.songTitle, "Song"); });
-    q("now-playing-artist-row").addEventListener("click", function () { editNowPlaying("artist_name", state.artistName, "Artist"); });
     q("source-select-btn").addEventListener("click", openSourcePopout);
     q("source-popout-collapse").addEventListener("click", closeSourcePopout);
     document.querySelectorAll(".source-option").forEach(function (el) {
