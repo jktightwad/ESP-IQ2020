@@ -183,8 +183,8 @@
       return;
     }
     if (domain === "fan") {
-      if (objectId === "jets_1") { state.jets1 = d.state === "ON"; renderJets(); }
-      else if (objectId === "jets_2") { state.jets2Level = d.speed_level || 0; renderJets(); }
+      if (objectId === "jets_1") { state.jets1 = d.state === "ON"; renderJets(); renderHome(); }
+      else if (objectId === "jets_2") { state.jets2Level = d.speed_level || 0; renderJets(); renderHome(); }
       return;
     }
     if (domain === "select") {
