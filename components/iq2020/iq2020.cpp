@@ -1555,10 +1555,14 @@ void IQ2020Component::pollState() {
 	}
 
 #ifdef USE_IQ2020_SELECT
-	// If we don't have the audio status, fetch it now.
-	if ((got_audio_data < 3) && (select_state[SELECT_AUDIO_SOURCE] == NOT_SET || switch_state[SWITCH_AUDIO_POWER] == NOT_SET)) {
+	// Fetch audio status if we don't have it yet, and keep refreshing it
+	// periodically afterward - see next_audio_poll in iq2020.h for why this
+	// can't just be a one-time startup fetch.
+	if (((got_audio_data < 3) && (select_state[SELECT_AUDIO_SOURCE] == NOT_SET || switch_state[SWITCH_AUDIO_POWER] == NOT_SET))
+		|| (::millis() >= next_audio_poll)) {
 		ESP_LOGD(TAG, "Poll Audio");
-		got_audio_data++;
+		if (got_audio_data < 3) { got_audio_data++; }
+		next_audio_poll = ::millis() + 30000;
 		unsigned char cmd[] = { 0x19, 0x01 };
 		sendIQ2020Command(0x01, 0x1F, 0x40, cmd, sizeof(cmd)); // Get audio status
 		return;

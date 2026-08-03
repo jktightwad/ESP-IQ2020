@@ -335,6 +335,15 @@ protected:
 	// bus, regardless of source) - suppress power-state updates from the
 	// response handler for a short window after either.
 	unsigned long suppress_audio_power_until = 0;
+	// pollState() only requested audio status (Power + the unambiguous,
+	// dedicated Play/pause-status field - see documentation/protocol.md's
+	// 19-byte "Audio module data" breakdown) 3 times, at boot, then never
+	// again - so anything that changes the module's state without also
+	// happening to generate other bus traffic (e.g. starting playback
+	// directly from a paired phone over Bluetooth, bypassing the spa's own
+	// controller entirely) was invisible until something else coincidentally
+	// refreshed it. Re-poll periodically instead - see pollState().
+	unsigned long next_audio_poll = 0;
 	int next_retry_count = 0;
 	int salt_power = NOT_SET; // This is polled too frequently to send to HA each time.
 	int salt_content = NOT_SET; // This is polled too frequently to send to HA each time.
