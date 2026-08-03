@@ -419,6 +419,14 @@
     // valid number. Coerce explicitly so both directions add correctly
     // regardless of whether current is a string or number.
     var v = Math.max(min, Math.min(max, (Number(current) || 0) + delta));
+    // Update local state immediately instead of waiting for the poll/SSE
+    // round-trip to confirm it - without this, pressing the button again
+    // before that round-trip lands recomputes from the same stale `current`
+    // and sends the same value again, silently wasting the repeat press
+    // (this is very likely why several presses were needed to see any
+    // change at all).
+    state[objectId] = v;
+    renderMusic();
     apiPost("/number/" + objectId + "/set", { value: v });
   }
 
