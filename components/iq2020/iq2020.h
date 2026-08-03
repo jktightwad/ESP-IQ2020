@@ -326,10 +326,14 @@ protected:
 	// (dst=01, src=33/1D, op=80, cmd=1901, cmdlen=9) as a genuine power
 	// status report, with no way to tell them apart from the packet alone -
 	// e.g. Pause's ack (value=2) was being read as "power off" even though
-	// pause genuinely worked and power was still on. Suppress power-state
-	// updates from that handler for a short window after we send one of
-	// these commands ourselves, since we know that ack isn't really a power
-	// report.
+	// pause genuinely worked and power was still on. This isn't only
+	// triggered by our own buttonAction() - the controller has also been
+	// observed sending this to the module entirely on its own (an apparent
+	// idle/keep-alive behavior), well outside any window a button press
+	// would arm. Armed from both spots: buttonAction() (our own command)
+	// and the "Audio controls" request handler (any 1901 xx seen on the
+	// bus, regardless of source) - suppress power-state updates from the
+	// response handler for a short window after either.
 	unsigned long suppress_audio_power_until = 0;
 	int next_retry_count = 0;
 	int salt_power = NOT_SET; // This is polled too frequently to send to HA each time.

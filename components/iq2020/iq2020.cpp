@@ -387,6 +387,15 @@ int IQ2020Component::processIQ2020Command() {
 		if ((processingBuffer[5] == 0x19) && (cmdlen >= 9)) {
 			if ((processingBuffer[6] == 0x01) && (cmdlen == 9)) { // Audio controls
 				if (processingBuffer[7] > 0) { setAudioButton(processingBuffer[7]); }
+				// The controller sends this to the module for play/pause/next/
+				// back regardless of what triggered it - our own button press,
+				// a real remote, or (confirmed on real hardware) autonomously
+				// on its own, well outside any window buttonAction() could
+				// have armed. Arm the suppression here too, since this is the
+				// one reliable signal that the module's upcoming ack isn't a
+				// genuine power report - see suppress_audio_power_until in
+				// iq2020.h.
+				suppress_audio_power_until = ::millis() + 2000;
 				switch (processingBuffer[7]) {
 				case 1: ESP_LOGD(TAG, "AUDIO - PLAY"); break;
 				case 2: ESP_LOGD(TAG, "AUDIO - PAUSE"); break;
