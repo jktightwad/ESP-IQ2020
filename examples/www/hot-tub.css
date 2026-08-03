@@ -597,13 +597,12 @@ body {
 /* Page-navigation arrows (next/previous screen) are wide rounded
    rectangles with a big arrow on the physical remote, unlike the
    circular power buttons that share this same base height/color.
-   font-size here drives the ARROW_RIGHT_ICON/ARROW_LEFT_ICON SVG's own
-   width:2.4em/height:1.1em sizing - kept low enough that a 2.4em-wide
-   icon still fits inside this button's 26cqh width with room to spare. */
+   font-size here sizes the square ARROW_RIGHT_ICON/ARROW_LEFT_ICON SVG
+   (1em x 1em). */
 .master-btn.nav-btn {
   width: 26cqh;
   border-radius: 20%;
-  font-size: 9cqh;
+  font-size: 12cqh;
   background: #1a1a1a;
   border: 2px solid #fff;
 }
@@ -995,7 +994,7 @@ body {
   font-size: 4.2cqh;
   cursor: pointer;
 }
-.source-select svg { width: 1.4em; }
+.source-select svg { width: 1.4em; height: 1.4em; }
 
 /* Memory / Clean Cycle - slide-out popouts over the Home screen (the
    icon rail stays visible behind them, same mechanism as the Music

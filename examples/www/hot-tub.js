@@ -38,15 +38,13 @@
   var MEMORY_ICON = '<svg viewBox="0 0 24 24" width="1em" height="1em"><path d="M12 2.5l2.7 5.9 6.4.9-4.6 4.6 1.1 6.4L12 17.4 6.4 20.3l1.1-6.4-4.6-4.6 6.4-.9L12 2.5z" fill="currentColor"></path><text x="12" y="15.5" font-size="7.5" font-weight="700" text-anchor="middle" fill="#0b2036" font-family="Arial, sans-serif">M</text></svg>';
   var CLEAN_ICON = '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 3.2c3.6 4.6 5.6 7.7 5.6 10.4a5.6 5.6 0 1 1-11.2 0c0-2.7 2-5.8 5.6-10.4z"></path><path d="M9.3 13.6a2.9 2.9 0 0 0 4.6 1.9M14.7 10.6a2.9 2.9 0 0 0-4.6-1.9"></path></svg>';
 
-  // Proper shaft-and-arrowhead icons for next/previous-page navigation,
-  // matching the physical remote - a plain "▶"/"◀" triangle reads more
-  // like a play button than a page-advance arrow.
-  // Wide viewBox with a long shaft (not square like the other icons) so
-  // the arrow fills the nav button's wide rectangle instead of floating
-  // as a small square glyph in the middle of it - width/height are set
-  // to a non-1:1 ratio on purpose, unlike every other icon here.
-  var ARROW_RIGHT_ICON = '<svg viewBox="0 0 48 24" width="2.4em" height="1.1em" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="2" y1="12" x2="36" y2="12"></line><polyline points="27 3 44 12 27 21"></polyline></svg>';
-  var ARROW_LEFT_ICON = '<svg viewBox="0 0 48 24" width="2.4em" height="1.1em" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="46" y1="12" x2="12" y2="12"></line><polyline points="21 3 4 12 21 21"></polyline></svg>';
+  // Feather Icons' real "arrow-right"/"arrow-left" (MIT-licensed, standard
+  // 24x24 viewBox and coordinates - not hand-drawn) - same icon set
+  // POWER_ICON above is already built from. Square and sized in 1em like
+  // every other icon here, so each button controls the actual size via
+  // its own font-size instead of the icon baking in a fixed shape.
+  var ARROW_RIGHT_ICON = '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>';
+  var ARROW_LEFT_ICON = '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>';
 
   // Fixed presets from the manual's "MOODS" section on the Lights screen.
   // "Magenta"/"Aqua" in the manual map to our closest available options
