@@ -476,7 +476,12 @@ int IQ2020Component::processIQ2020Command() {
 			if ((processingBuffer[6] == 0x01) && (cmdlen == 9)) { // Audio power
 				//          050607
 				// 01 33 80 190102 -- 07: 0x1 == on, 0x2 == off
-				setSwitchState(SWITCH_AUDIO_POWER, (int)(processingBuffer[7] == 0x1));
+				// This exact packet shape is also how the module acks a
+				// Play/Pause/Next/Back command we sent - see
+				// suppress_audio_power_until in iq2020.h.
+				if (::millis() >= suppress_audio_power_until) {
+					setSwitchState(SWITCH_AUDIO_POWER, (int)(processingBuffer[7] == 0x1));
+				}
 			}
 			else if ((processingBuffer[6] == 0x00) && (cmdlen == 14)) { // Audio settings
 				// These are currently processed as part of the REQ from IQ to Audio Module
@@ -1416,31 +1421,36 @@ void IQ2020Component::buttonAction(unsigned int buttonid) {
 		cmd[8] = 0x01; // 01 01 FF FF
 		sendIQ2020Command(0x29, 0x01, 0x40, cmd, sizeof(cmd));
 		break;
-	// Per documentation/protocol.md: "01 1F 40 1900 02xx - Set Play/Pause/Next/Back",
-	// same command family (and same spoofed-0x1F relay path) already confirmed
-	// working on real hardware for Audio on/off and Volume/Treble/Bass/Balance/
-	// Subwoofer. Untested against real playback as of this writing - the physical
-	// remote that could otherwise confirm the byte values is not usable.
+	// Per documentation/protocol.md: "01 1F 40 1900 02xx - Set Play/Pause/Next/Back".
+	// Confirmed working on real hardware (Pause genuinely paused Spotify) -
+	// the module's ack of this command reuses the same 9-byte format as a
+	// power status report, so suppress that field's next update for a
+	// couple seconds; see the comment on suppress_audio_power_until in
+	// iq2020.h for why.
 	case BUTTON_AUDIO_PLAY:
 	{
+		suppress_audio_power_until = ::millis() + 2000;
 		unsigned char audioCmd[] = { 0x19, 0x00, 0x02, 0x01 };
 		sendIQ2020Command(0x01, 0x1F, 0x40, audioCmd, sizeof(audioCmd));
 		return; // Don't fall through to the salt-system retry/poll logic below.
 	}
 	case BUTTON_AUDIO_PAUSE:
 	{
+		suppress_audio_power_until = ::millis() + 2000;
 		unsigned char audioCmd[] = { 0x19, 0x00, 0x02, 0x02 };
 		sendIQ2020Command(0x01, 0x1F, 0x40, audioCmd, sizeof(audioCmd));
 		return;
 	}
 	case BUTTON_AUDIO_NEXT:
 	{
+		suppress_audio_power_until = ::millis() + 2000;
 		unsigned char audioCmd[] = { 0x19, 0x00, 0x02, 0x03 };
 		sendIQ2020Command(0x01, 0x1F, 0x40, audioCmd, sizeof(audioCmd));
 		return;
 	}
 	case BUTTON_AUDIO_BACK:
 	{
+		suppress_audio_power_until = ::millis() + 2000;
 		unsigned char audioCmd[] = { 0x19, 0x00, 0x02, 0x04 };
 		sendIQ2020Command(0x01, 0x1F, 0x40, audioCmd, sizeof(audioCmd));
 		return;

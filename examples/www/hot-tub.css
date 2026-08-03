@@ -816,11 +816,11 @@ body {
   letter-spacing: 0.04em;
   margin-right: 0.6em;
 }
-/* Transport row (see the comment at its markup - untested against real
-   playback as of this writing) - sized to match the other icon buttons on
-   this screen instead of the default text-button styling. They also flash
-   via .active when the "buttons" sensor reports a real press on the tub's
-   own wired remote (confirmed working). */
+/* Transport row (see the comment at its markup - Pause confirmed working
+   against real playback) - sized to match the other icon buttons on this
+   screen instead of the default text-button styling. They also flash via
+   .active when the "buttons" sensor reports a real press on the tub's own
+   wired remote (confirmed working). */
 .transport-row {
   display: flex;
   gap: 3cqw;

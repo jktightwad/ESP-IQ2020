@@ -321,6 +321,16 @@ protected:
 	unsigned long next_poll = 0;
 	unsigned long next_retry = 0;
 	unsigned long last_pin_check_time = 0;
+	// Confirmed on real hardware: the module's ack of a Play/Pause/Next/Back
+	// command reuses the exact same 9-byte "audio power" response format
+	// (dst=01, src=33/1D, op=80, cmd=1901, cmdlen=9) as a genuine power
+	// status report, with no way to tell them apart from the packet alone -
+	// e.g. Pause's ack (value=2) was being read as "power off" even though
+	// pause genuinely worked and power was still on. Suppress power-state
+	// updates from that handler for a short window after we send one of
+	// these commands ourselves, since we know that ack isn't really a power
+	// report.
+	unsigned long suppress_audio_power_until = 0;
 	int next_retry_count = 0;
 	int salt_power = NOT_SET; // This is polled too frequently to send to HA each time.
 	int salt_content = NOT_SET; // This is polled too frequently to send to HA each time.

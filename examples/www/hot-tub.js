@@ -823,11 +823,13 @@
             '<div class="now-playing-row"><span class="now-playing-label">Song:</span><span id="now-playing-song"></span></div>' +
             '<div class="now-playing-row"><span class="now-playing-label">Artist:</span><span id="now-playing-artist"></span></div>' +
           '</div>' +
-          // Send "01 1F 40 1900 02xx" per documentation/protocol.md - unverified
-          // against real playback as of this writing (see the comment in
-          // IQ2020Component::buttonAction()). They also still light up live
-          // when the matching button is pressed on the tub's own wired
-          // remote, via the "buttons" sensor - that part is confirmed working.
+          // Send "01 1F 40 1900 02xx" per documentation/protocol.md - Pause
+          // confirmed working against real playback (genuinely paused
+          // Spotify); see the comment in IQ2020Component::buttonAction() for
+          // the one side effect this uncovered. They also still light up
+          // live when the matching button is pressed on the tub's own wired
+          // remote, via the "buttons" sensor - that part is confirmed working
+          // too.
           '<div class="transport-row">' +
             '<button class="transport-btn" id="transport-btn-4" data-audio-button="back">' + SKIP_BACK_ICON + '</button>' +
             '<button class="transport-btn" id="transport-btn-1" data-audio-button="play">' + PLAY_ICON + '</button>' +
