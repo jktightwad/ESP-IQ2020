@@ -1214,12 +1214,10 @@ void IQ2020Component::switchAction(unsigned int switchid, int state) {
 	case SWITCH_AUDIO_POWER: // Audio Power
 	{
 		switch_pending[switchid] = state; // 0 = OFF, 1 = ON
-		// Wire encoding for audio power is 1=On, 2=Off (see the status-parsing
-		// comment above and the normalized reads elsewhere in this file) - 0x00
-		// isn't a value this protocol ever uses for "off" anywhere else, so it
-		// was very likely being ignored by the real audio module, leaving power
-		// genuinely still on even though the switch briefly showed off locally.
-		unsigned char cmd[] = { 0x19, 0x00, 0x04, (unsigned char)(state ? 0x01 : 0x02), 0x00 };
+		// Confirmed against documentation/protocol.md's real bus capture:
+		// "01 1F 40 1900 040100 - Audio on" / "01 1F 40 1900 040000 - Audio
+		// off" - 0x00 is the correct, documented value for off here.
+		unsigned char cmd[] = { 0x19, 0x00, 0x04, (unsigned char)(state ? 0x01 : 0x00), 0x00 };
 		sendIQ2020Command(0x01, 0x1F, 0x40, cmd, sizeof(cmd));
 		break;
 	}
