@@ -137,6 +137,11 @@ sensor:
     # Required alongside the audio entities below - see documentation/audio.md
     buttons:
       name: Buttons
+    # Raw, unconfirmed play/pause status byte - watch this while actually
+    # playing/pausing music to learn its real values before it gets turned
+    # into a proper Play/Pause toggle button. See documentation/audio.md.
+    audio_playpause:
+      name: Audio Play/Pause Status
 
 switch:
   - platform: iq2020

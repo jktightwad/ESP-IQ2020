@@ -706,6 +706,13 @@ int IQ2020Component::processIQ2020Command() {
 			setNumberState(NUMBER_AUDIO_BALANCE, (signed char)processingBuffer[11]);
 			setNumberState(NUMBER_AUDIO_SUBWOOFER, processingBuffer[12]);
 #endif
+#ifdef USE_SENSOR
+			// Raw play/pause status byte (offset 13) - published unmodified.
+			// Meaning not yet confirmed against real playing/paused states,
+			// so this is deliberately not normalized into a boolean/enum
+			// yet - see documentation/protocol.md for the field layout.
+			if (this->audio_playpause_sensor_) this->audio_playpause_sensor_->publish_state(processingBuffer[13]);
+#endif
 		}
 
 		if ((cmdlen == 26) && (processingBuffer[5] == 0x1E) && (processingBuffer[6] == 0x03)) {

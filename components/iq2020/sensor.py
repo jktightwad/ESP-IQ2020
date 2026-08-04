@@ -60,6 +60,7 @@ CONF_SENSOR_POWER_L2 = "power_l2"
 CONF_SENSOR_PCB_F_TEMPERATURE = "pcb_f_temperature"
 CONF_SENSOR_PCB_C_TEMPERATURE = "pcb_c_temperature"
 CONF_SENSOR_BUTTONS = "buttons"
+CONF_SENSOR_AUDIO_PLAYPAUSE = "audio_playpause"
 CONF_SENSOR_LOGO_LIGHTS = "logo_lights"
 CONF_SENSOR_LOGO_LIGHTS_RAW = "logo_lights_raw"
 CONF_SENSOR_LIGHTS_INTENSITY = "lights_intensity"
@@ -306,6 +307,13 @@ CONFIG_SCHEMA = cv.Schema(
         cv.Optional(CONF_SENSOR_BUTTONS): sensor.sensor_schema(
             accuracy_decimals=0
         ),
+        # Raw, unguessed value - exposed as-is so real values can be
+        # observed against known playing/paused states before deciding how
+        # to interpret it (see documentation/protocol.md, 19-byte "IQ2020 ->
+        # SPA connection kit Response" format, offset 13).
+        cv.Optional(CONF_SENSOR_AUDIO_PLAYPAUSE): sensor.sensor_schema(
+            accuracy_decimals=0
+        ),
         cv.Optional(CONF_SENSOR_LOGO_LIGHTS): sensor.sensor_schema(
             accuracy_decimals=0,
             icon=ICON_LIGHTBULB
@@ -523,6 +531,10 @@ async def to_code(config):
     if CONF_SENSOR_BUTTONS in config:
         sens = await sensor.new_sensor(config[CONF_SENSOR_BUTTONS])
         cg.add(server.set_buttons_sensor(sens))
+
+    if CONF_SENSOR_AUDIO_PLAYPAUSE in config:
+        sens = await sensor.new_sensor(config[CONF_SENSOR_AUDIO_PLAYPAUSE])
+        cg.add(server.set_audio_playpause_sensor(sens))
 
     if CONF_SENSOR_LOGO_LIGHTS in config:
         sens = await sensor.new_sensor(config[CONF_SENSOR_LOGO_LIGHTS])
