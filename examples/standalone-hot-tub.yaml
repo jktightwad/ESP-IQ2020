@@ -141,7 +141,7 @@ sensor:
     # playing/pausing music to learn its real values before it gets turned
     # into a proper Play/Pause toggle button. See documentation/audio.md.
     audio_playpause:
-      name: Audio Play/Pause Status
+      name: Audio Play-Pause Status
 
 switch:
   - platform: iq2020
